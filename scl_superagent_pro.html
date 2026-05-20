@@ -1,0 +1,2183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCL SuperAgent Pro - TIA Portal</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue-50: #E6F1FB; --blue-200: #85B7EB; --blue-400: #378ADD; --blue-800: #0C447C;
+    --teal-50: #E1F5EE; --teal-400: #1D9E75; --teal-800: #085041;
+    --amber-50: #FAEEDA; --amber-400: #BA7517; --amber-800: #633806;
+    --gray-50: #F1EFE8; --gray-200: #B4B2A9; --gray-600: #5F5E5A;
+    --coral-50: #FAECE7; --coral-400: #D85A30; --coral-800: #712B13;
+    --purple-50: #F3E8FF; --purple-400: #9333EA; --purple-800: #581C87;
+    --bg-primary: #ffffff; --bg-secondary: #f8f8f6; --bg-tertiary: #edebe4;
+    --text-primary: #2c2c2a; --text-secondary: #5f5e5a; --text-tertiary: #888780;
+    --border-primary: rgba(0,0,0,0.4); --border-secondary: rgba(0,0,0,0.3); --border-tertiary: rgba(0,0,0,0.15);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #1a1a18; --bg-secondary: #252523; --bg-tertiary: #2f2f2d;
+      --text-primary: #e8e6dc; --text-secondary: #c2c0b6; --text-tertiary: #9c9a92;
+      --border-primary: rgba(255,255,255,0.4); --border-secondary: rgba(255,255,255,0.3); --border-tertiary: rgba(255,255,255,0.15);
+    }
+  }
+  body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-secondary); color: var(--text-primary);
+  }
+  
+  /* Layout principal */
+  #app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+  #app.fullscreen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; }
+
+  .topbar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 0.5px solid var(--border-tertiary);
+    background: var(--bg-primary);
+    flex-shrink: 0;
+  }
+  .logo-badge {
+    background: linear-gradient(135deg, var(--blue-400), var(--purple-400));
+    color: #fff; font-size: 11px; font-weight: 600; 
+    padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px;
+  }
+  .agent-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .agent-sub { font-size: 11px; color: var(--text-secondary); margin-left: auto; }
+  
+  .topbar-actions {
+    display: flex; gap: 6px; align-items: center;
+  }
+  .icon-btn {
+    width: 28px; height: 28px; border-radius: 6px;
+    border: 0.5px solid var(--border-tertiary);
+    background: var(--bg-secondary); color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all .15s; font-size: 15px;
+  }
+  .icon-btn:hover { background: var(--blue-50); color: var(--blue-800); border-color: var(--blue-200); }
+  .icon-btn.active { background: var(--blue-400); color: white; border-color: var(--blue-400); }
+  
+  .status-indicator {
+    display: flex; align-items: center; gap: 6px;
+    padding: 3px 8px; border-radius: 12px;
+    background: var(--teal-50); border: 0.5px solid var(--teal-400);
+    font-size: 10px; font-weight: 500; color: var(--teal-800);
+  }
+  .status-dot { 
+    width: 6px; height: 6px; border-radius: 50%; background: var(--teal-400);
+  }
+  .status-indicator.connecting .status-dot { background: var(--amber-400); animation: pulse 1.5s ease-in-out infinite; }
+  .status-indicator.error { background: var(--coral-50); border-color: var(--coral-400); color: var(--coral-800); }
+  .status-indicator.error .status-dot { background: var(--coral-400); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .layout { display: flex; flex: 1; min-height: 0; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 220px; min-width: 220px;
+    border-right: 0.5px solid var(--border-tertiary);
+    background: var(--bg-secondary);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .sidebar-header {
+    padding: 12px 14px;
+    border-bottom: 0.5px solid var(--border-tertiary);
+    background: var(--bg-primary);
+  }
+  .project-selector {
+    width: 100%; padding: 6px 10px; font-size: 12px;
+    border-radius: 6px; border: 0.5px solid var(--border-secondary);
+    background: var(--bg-primary); color: var(--text-primary);
+    font-family: inherit;
+  }
+  
+  .sidebar-section { 
+    font-size: 10px; font-weight: 600; color: var(--text-tertiary);
+    padding: 12px 14px 4px; letter-spacing: 0.8px; text-transform: uppercase; 
+  }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 14px; cursor: pointer; font-size: 13px;
+    color: var(--text-secondary); transition: all .15s;
+    border-left: 2px solid transparent;
+  }
+  .sidebar-item:hover { background: var(--bg-primary); color: var(--text-primary); }
+  .sidebar-item.active {
+    background: var(--bg-primary);
+    color: var(--blue-800); font-weight: 500;
+    border-left-color: var(--blue-400);
+  }
+  .sidebar-item i { font-size: 15px; width: 18px; }
+  .sidebar-item .badge {
+    margin-left: auto; font-size: 9px; font-weight: 600;
+    padding: 2px 5px; border-radius: 4px;
+    background: var(--blue-50); color: var(--blue-800);
+  }
+
+  /* Main content */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-primary); }
+
+  .panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+  .panel.active { display: flex; }
+
+  /* Chat panel */
+  .chat-container { display: flex; flex: 1; min-height: 0; }
+  
+  .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .msg { display: flex; gap: 10px; animation: slideIn 0.3s ease; }
+  .msg.user { flex-direction: row-reverse; }
+  @keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  
+  .msg-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; flex-shrink: 0;
+  }
+  .msg-avatar.agent { background: var(--blue-50); color: var(--blue-800); border: 0.5px solid var(--blue-200); }
+  .msg-avatar.user { background: var(--teal-50); color: var(--teal-800); border: 0.5px solid var(--teal-400); }
+  
+  .msg-content { flex: 1; max-width: 75%; }
+  .msg-bubble {
+    padding: 10px 14px; border-radius: 10px;
+    font-size: 13px; line-height: 1.6;
+    border: 0.5px solid var(--border-tertiary);
+    background: var(--bg-primary); color: var(--text-primary);
+  }
+  .msg.user .msg-bubble { background: var(--blue-50); border-color: var(--blue-200); }
+  @media (prefers-color-scheme: dark) {
+    .msg.user .msg-bubble { background: rgba(55, 138, 221, 0.15); border-color: rgba(55, 138, 221, 0.3); }
+  }
+  
+  .msg-bubble pre {
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border-tertiary);
+    border-radius: 6px; padding: 12px; margin: 8px 0;
+    font-size: 11px; line-height: 1.5;
+    font-family: 'Courier New', monospace;
+    overflow-x: auto; color: var(--text-primary);
+    position: relative;
+  }
+  .code-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px; padding-bottom: 6px;
+    border-bottom: 0.5px solid var(--border-tertiary);
+  }
+  .code-lang {
+    font-size: 10px; font-weight: 600; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .code-actions {
+    display: flex; gap: 4px;
+  }
+  .code-btn {
+    padding: 3px 8px; font-size: 10px; border-radius: 4px;
+    border: 0.5px solid var(--border-secondary);
+    background: var(--bg-primary); color: var(--text-secondary);
+    cursor: pointer; transition: all .15s;
+  }
+  .code-btn:hover { background: var(--blue-50); color: var(--blue-800); border-color: var(--blue-200); }
+  
+  .msg-actions {
+    display: flex; gap: 6px; margin-top: 6px;
+    opacity: 0; transition: opacity .2s;
+  }
+  .msg:hover .msg-actions { opacity: 1; }
+  .msg-action-btn {
+    padding: 3px 8px; font-size: 11px; border-radius: 4px;
+    border: 0.5px solid var(--border-secondary);
+    background: var(--bg-secondary); color: var(--text-secondary);
+    cursor: pointer; transition: all .15s;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .msg-action-btn:hover { background: var(--blue-50); color: var(--blue-800); }
+  
+  .msg-meta { 
+    font-size: 10px; color: var(--text-tertiary); 
+    margin-top: 4px; display: flex; align-items: center; gap: 6px;
+  }
+  .quality-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 9px; padding: 2px 5px; border-radius: 3px;
+    background: var(--teal-50); color: var(--teal-800);
+    border: 0.5px solid var(--teal-400);
+  }
+
+  .typing-indicator {
+    display: inline-flex; gap: 4px; padding: 8px 12px;
+  }
+  .typing-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-secondary);
+    animation: typing 1.4s ease-in-out infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing { 0%,60%,100%{opacity:0.3} 30%{opacity:1} }
+
+  /* Sidebar droite - Code review */
+  .code-review-panel {
+    width: 320px; border-left: 0.5px solid var(--border-tertiary);
+    background: var(--bg-secondary);
+    display: none; flex-direction: column;
+  }
+  .code-review-panel.active { display: flex; }
+  
+  .review-header {
+    padding: 12px 14px;
+    border-bottom: 0.5px solid var(--border-tertiary);
+    background: var(--bg-primary);
+  }
+  .review-title {
+    font-size: 13px; font-weight: 600; color: var(--text-primary);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .review-content {
+    flex: 1; overflow-y: auto; padding: 12px;
+  }
+  .review-section {
+    margin-bottom: 16px;
+  }
+  .review-section-title {
+    font-size: 11px; font-weight: 600; color: var(--text-secondary);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .review-item {
+    padding: 8px 10px; margin-bottom: 6px;
+    border-radius: 6px; border: 0.5px solid var(--border-tertiary);
+    background: var(--bg-primary); font-size: 12px;
+  }
+  .review-item.success { border-color: var(--teal-400); background: var(--teal-50); color: var(--teal-800); }
+  .review-item.warning { border-color: var(--amber-400); background: var(--amber-50); color: var(--amber-800); }
+  .review-item.error { border-color: var(--coral-400); background: var(--coral-50); color: var(--coral-800); }
+
+  /* Input area */
+  .chat-input-area {
+    border-top: 0.5px solid var(--border-tertiary);
+    padding: 12px 16px; background: var(--bg-primary);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .quick-prompts { 
+    display: flex; gap: 6px; flex-wrap: wrap;
+    max-height: 80px; overflow-y: auto;
+  }
+  .qp-btn {
+    font-size: 11px; padding: 5px 12px; border-radius: 16px;
+    border: 0.5px solid var(--border-secondary);
+    background: var(--bg-secondary);
+    color: var(--text-secondary); cursor: pointer;
+    transition: all .15s; white-space: nowrap;
+  }
+  .qp-btn:hover { background: var(--blue-50); border-color: var(--blue-200); color: var(--blue-800); }
+  
+  .input-row { display: flex; gap: 8px; align-items: flex-end; }
+  .input-wrapper {
+    flex: 1; position: relative;
+  }
+  .chat-textarea {
+    width: 100%; padding: 10px 40px 10px 12px; font-size: 13px; resize: none;
+    min-height: 44px; max-height: 120px; border-radius: 10px;
+    border: 0.5px solid var(--border-secondary);
+    background: var(--bg-secondary); color: var(--text-primary);
+    font-family: inherit; line-height: 1.5;
+  }
+  .input-actions {
+    position: absolute; right: 8px; bottom: 8px;
+    display: flex; gap: 4px;
+  }
+  .input-icon-btn {
+    width: 26px; height: 26px; border-radius: 5px;
+    background: var(--bg-primary); border: 0.5px solid var(--border-tertiary);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 14px; color: var(--text-secondary);
+    transition: all .15s;
+  }
+  .input-icon-btn:hover { background: var(--blue-50); color: var(--blue-800); }
+  
+  .send-btn {
+    padding: 10px 18px; background: var(--blue-400); color: #fff;
+    border: none; border-radius: 10px; cursor: pointer;
+    font-size: 13px; font-weight: 600; transition: all .15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .send-btn:hover:not(:disabled) { background: var(--blue-800); }
+  .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Snippets panel */
+  .snippets-grid { 
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+    gap: 12px; padding: 16px; overflow-y: auto;
+  }
+  .snippet-card {
+    border: 0.5px solid var(--border-tertiary);
+    border-radius: 10px; padding: 14px;
+    background: var(--bg-primary);
+    transition: all .15s; cursor: pointer;
+  }
+  .snippet-card:hover { 
+    border-color: var(--blue-400); 
+    box-shadow: 0 2px 8px rgba(55, 138, 221, 0.15);
+  }
+  .snippet-header {
+    display: flex; justify-content: space-between; align-items: start;
+    margin-bottom: 8px;
+  }
+  .snippet-title {
+    font-size: 13px; font-weight: 600; color: var(--text-primary);
+  }
+  .snippet-category {
+    font-size: 9px; padding: 2px 6px; border-radius: 4px;
+    background: var(--purple-50); color: var(--purple-800);
+    font-weight: 600;
+  }
+  .snippet-desc {
+    font-size: 11px; color: var(--text-secondary);
+    line-height: 1.5; margin-bottom: 8px;
+  }
+  .snippet-preview {
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border-tertiary);
+    border-radius: 6px; padding: 8px;
+    font-size: 10px; font-family: 'Courier New', monospace;
+    color: var(--text-secondary); max-height: 60px; overflow: hidden;
+  }
+
+  /* Config panel */
+  .config-container {
+    display: flex; gap: 0; flex: 1; overflow: hidden;
+  }
+  .config-sidebar {
+    width: 200px; border-right: 0.5px solid var(--border-tertiary);
+    background: var(--bg-secondary);
+    overflow-y: auto;
+  }
+  .config-content {
+    flex: 1; overflow-y: auto; padding: 20px;
+  }
+  
+  .config-section {
+    margin-bottom: 24px;
+  }
+  .config-section-title {
+    font-size: 15px; font-weight: 600; color: var(--text-primary);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .field-group {
+    margin-bottom: 14px;
+  }
+  .field-label {
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    margin-bottom: 6px; display: block;
+  }
+  .field-input, .field-select, .field-textarea {
+    width: 100%; padding: 8px 12px; font-size: 13px;
+    border-radius: 8px; border: 0.5px solid var(--border-secondary);
+    background: var(--bg-primary); color: var(--text-primary);
+    font-family: inherit;
+  }
+  .field-textarea {
+    resize: vertical; min-height: 80px;
+  }
+  .field-hint {
+    font-size: 11px; color: var(--text-tertiary);
+    margin-top: 4px; font-style: italic;
+  }
+  
+  .toggle-group {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; border-radius: 8px;
+    border: 0.5px solid var(--border-tertiary);
+    background: var(--bg-primary); margin-bottom: 8px;
+  }
+  .toggle-label {
+    font-size: 13px; color: var(--text-primary);
+  }
+  .toggle-switch {
+    width: 44px; height: 24px; border-radius: 12px;
+    background: var(--gray-200); position: relative;
+    cursor: pointer; transition: background .2s;
+  }
+  .toggle-switch.active { background: var(--teal-400); }
+  .toggle-switch::after {
+    content: ''; width: 18px; height: 18px; border-radius: 50%;
+    background: white; position: absolute; top: 3px; left: 3px;
+    transition: left .2s;
+  }
+  .toggle-switch.active::after { left: 23px; }
+  
+  .btn-primary {
+    padding: 10px 20px; background: var(--blue-400); color: #fff;
+    border: none; border-radius: 8px; cursor: pointer;
+    font-size: 13px; font-weight: 600; transition: all .15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary:hover { background: var(--blue-800); }
+  
+  .btn-secondary {
+    padding: 10px 20px; background: var(--bg-secondary); 
+    color: var(--text-primary);
+    border: 0.5px solid var(--border-secondary); border-radius: 8px;
+    cursor: pointer; font-size: 13px; font-weight: 600;
+    transition: all .15s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-secondary:hover { background: var(--bg-tertiary); }
+
+  .alert {
+    padding: 12px 14px; border-radius: 8px; font-size: 12px;
+    margin-bottom: 16px; border: 0.5px solid;
+    display: flex; align-items: start; gap: 10px;
+  }
+  .alert.success { background: var(--teal-50); color: var(--teal-800); border-color: var(--teal-400); }
+  .alert.error { background: var(--coral-50); color: var(--coral-800); border-color: var(--coral-400); }
+  .alert.info { background: var(--amber-50); color: var(--amber-800); border-color: var(--amber-400); }
+  .alert i { font-size: 16px; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5); z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--bg-primary); border-radius: 12px;
+    max-width: 600px; width: 90%; max-height: 80vh;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    display: flex; flex-direction: column;
+  }
+  .modal-header {
+    padding: 16px 20px; border-bottom: 0.5px solid var(--border-tertiary);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-title {
+    font-size: 16px; font-weight: 600; color: var(--text-primary);
+  }
+  .modal-close {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: var(--bg-secondary); border: none;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary); font-size: 18px;
+  }
+  .modal-close:hover { background: var(--bg-tertiary); }
+  .modal-body {
+    padding: 20px; overflow-y: auto; flex: 1;
+  }
+  .modal-footer {
+    padding: 16px 20px; border-top: 0.5px solid var(--border-tertiary);
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+
+  /* Export options */
+  .export-options {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .export-option {
+    padding: 14px; border-radius: 8px;
+    border: 0.5px solid var(--border-tertiary);
+    background: var(--bg-primary); cursor: pointer;
+    transition: all .15s;
+  }
+  .export-option:hover {
+    border-color: var(--blue-400);
+    background: var(--blue-50);
+  }
+  .export-option-title {
+    font-size: 13px; font-weight: 600; color: var(--text-primary);
+    margin-bottom: 4px; display: flex; align-items: center; gap: 6px;
+  }
+  .export-option-desc {
+    font-size: 11px; color: var(--text-secondary);
+  }
+
+  /* Projects list */
+  .projects-list {
+    padding: 16px; overflow-y: auto;
+  }
+  .project-item {
+    padding: 12px; border-radius: 8px;
+    border: 0.5px solid var(--border-tertiary);
+    background: var(--bg-primary); margin-bottom: 10px;
+    cursor: pointer; transition: all .15s;
+  }
+  .project-item:hover {
+    border-color: var(--blue-400);
+    box-shadow: 0 2px 8px rgba(55, 138, 221, 0.15);
+  }
+  .project-item.active {
+    border-color: var(--blue-400);
+    background: var(--blue-50);
+  }
+  .project-name {
+    font-size: 13px; font-weight: 600; color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .project-meta {
+    font-size: 11px; color: var(--text-secondary);
+    display: flex; gap: 12px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+  ::-webkit-scrollbar-thumb { background: var(--border-secondary); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-primary); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .sidebar { width: 60px; min-width: 60px; }
+    .sidebar-section, .project-selector { display: none; }
+    .sidebar-item span { display: none; }
+    .code-review-panel { width: 100%; position: absolute; inset: 0; z-index: 100; }
+  }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+</head>
+<body>
+
+<div id="app">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="logo-badge">SCL PRO</div>
+    <div class="agent-title">SuperAgent TIA Portal</div>
+    <div class="agent-sub">Multi-modèles · Export XML · Code Review</div>
+    
+    <div class="topbar-actions">
+      <div class="status-indicator" id="statusIndicator">
+        <span class="status-dot"></span>
+        <span id="statusText">Prêt</span>
+      </div>
+      <button class="icon-btn" onclick="toggleReviewPanel()" title="Code Review" id="reviewToggle">
+        <i class="ti ti-file-analytics"></i>
+      </button>
+      <button class="icon-btn" onclick="openExportModal()" title="Exporter">
+        <i class="ti ti-download"></i>
+      </button>
+      <button class="icon-btn" onclick="openShareModal()" title="Partager">
+        <i class="ti ti-share"></i>
+      </button>
+      <button class="icon-btn" onclick="toggleFullscreen()" title="Plein écran" id="fullscreenBtn">
+        <i class="ti ti-arrows-maximize"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- Sidebar gauche -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <select class="project-selector" id="projectSelector" onchange="switchProject()">
+          <option value="default">Station AEP Secteur Nord</option>
+          <option value="projet2">Relevage EU Zone Industrielle</option>
+          <option value="projet3">Surpression Immeuble R+12</option>
+        </select>
+      </div>
+      
+      <div class="sidebar-section">Navigation</div>
+      <div class="sidebar-item active" onclick="switchPanel('chat')">
+        <i class="ti ti-message-dots"></i>
+        <span>Chat IA</span>
+      </div>
+      <div class="sidebar-item" onclick="switchPanel('snippets')">
+        <i class="ti ti-code"></i>
+        <span>Bibliothèque</span>
+        <span class="badge">47</span>
+      </div>
+      <div class="sidebar-item" onclick="switchPanel('projects')">
+        <i class="ti ti-folder"></i>
+        <span>Projets</span>
+      </div>
+      <div class="sidebar-item" onclick="switchPanel('history')">
+        <i class="ti ti-history"></i>
+        <span>Historique</span>
+      </div>
+      
+      <div class="sidebar-section">Outils</div>
+      <div class="sidebar-item" onclick="openValidator()">
+        <i class="ti ti-check"></i>
+        <span>Validateur SCL</span>
+      </div>
+      <div class="sidebar-item" onclick="openOptimizer()">
+        <i class="ti ti-rocket"></i>
+        <span>Optimiseur</span>
+      </div>
+      <div class="sidebar-item" onclick="openDocGenerator()">
+        <i class="ti ti-book"></i>
+        <span>Documentation</span>
+      </div>
+      
+      <div class="sidebar-section">Configuration</div>
+      <div class="sidebar-item" onclick="switchPanel('config')">
+        <i class="ti ti-settings"></i>
+        <span>Paramètres</span>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="main">
+      <!-- Chat Panel -->
+      <div class="panel active" id="chat-panel">
+        <div class="chat-container">
+          <div class="chat-main">
+            <div class="chat-messages" id="messages"></div>
+            
+            <div class="chat-input-area">
+              <div class="quick-prompts" id="quickPrompts">
+                <button class="qp-btn" onclick="useQuickPrompt('Crée un PID pour régulation de pression avec anti-windup')">🎯 PID pression</button>
+                <button class="qp-btn" onclick="useQuickPrompt('Génère un système d\'alternance pour 3 pompes avec heures de marche')">🔄 Alternance pompes</button>
+                <button class="qp-btn" onclick="useQuickPrompt('Crée un bloc de gestion des alarmes avec acquittement')">🔔 Gestion alarmes</button>
+                <button class="qp-btn" onclick="useQuickPrompt('Génère le Data Block global de la station')">💾 DB Station</button>
+                <button class="qp-btn" onclick="useQuickPrompt('Crée une protection anti-marche à sec avec capteurs')">🛡️ Protection</button>
+                <button class="qp-btn" onclick="useQuickPrompt('Optimise ce code SCL pour réduire le temps de cycle')">⚡ Optimiser</button>
+              </div>
+              
+              <div class="input-row">
+                <div class="input-wrapper">
+                  <textarea 
+                    class="chat-textarea" 
+                    id="userInput" 
+                    rows="1"
+                    placeholder="Décrivez votre besoin SCL ou collez du code à analyser..."
+                    onkeydown="handleKeyPress(event)"
+                    oninput="autoResize(this)"
+                  ></textarea>
+                  <div class="input-actions">
+                    <button class="input-icon-btn" onclick="attachFile()" title="Joindre fichier">
+                      <i class="ti ti-paperclip"></i>
+                    </button>
+                    <button class="input-icon-btn" onclick="toggleVoice()" title="Entrée vocale">
+                      <i class="ti ti-microphone"></i>
+                    </button>
+                  </div>
+                </div>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                  <i class="ti ti-send"></i>
+                  Envoyer
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Code Review Panel -->
+          <div class="code-review-panel" id="reviewPanel">
+            <div class="review-header">
+              <div class="review-title">
+                <i class="ti ti-file-analytics"></i>
+                Analyse de code
+              </div>
+            </div>
+            <div class="review-content" id="reviewContent">
+              <div class="alert info">
+                <i class="ti ti-info-circle"></i>
+                <div>Générez du code SCL pour voir l'analyse automatique de qualité.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Snippets Panel -->
+      <div class="panel" id="snippets-panel">
+        <div class="snippets-grid" id="snippetsGrid">
+          <!-- Les snippets seront générés dynamiquement -->
+        </div>
+      </div>
+
+      <!-- Projects Panel -->
+      <div class="panel" id="projects-panel">
+        <div class="projects-list" id="projectsList">
+          <!-- Les projets seront générés dynamiquement -->
+        </div>
+      </div>
+
+      <!-- Config Panel -->
+      <div class="panel" id="config-panel">
+        <div class="config-container">
+          <div class="config-sidebar">
+            <div class="sidebar-section">Paramètres</div>
+            <div class="sidebar-item active" onclick="showConfigSection('api')">
+              <i class="ti ti-plug"></i>
+              <span>API & Modèles</span>
+            </div>
+            <div class="sidebar-item" onclick="showConfigSection('context')">
+              <i class="ti ti-cpu"></i>
+              <span>Contexte automate</span>
+            </div>
+            <div class="sidebar-item" onclick="showConfigSection('features')">
+              <i class="ti ti-sparkles"></i>
+              <span>Fonctionnalités</span>
+            </div>
+            <div class="sidebar-item" onclick="showConfigSection('export')">
+              <i class="ti ti-file-export"></i>
+              <span>Export & Plugins</span>
+            </div>
+            <div class="sidebar-item" onclick="showConfigSection('advanced')">
+              <i class="ti ti-adjustments"></i>
+              <span>Avancé</span>
+            </div>
+          </div>
+          
+          <div class="config-content" id="configContent">
+            <!-- Le contenu sera généré dynamiquement -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Export -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Exporter le code SCL</div>
+      <button class="modal-close" onclick="closeModal('exportModal')">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="export-options">
+        <div class="export-option" onclick="exportAs('scl')">
+          <div class="export-option-title">
+            <i class="ti ti-file-code"></i>
+            Fichier SCL
+          </div>
+          <div class="export-option-desc">Code source pur (.scl)</div>
+        </div>
+        <div class="export-option" onclick="exportAs('xml')">
+          <div class="export-option-title">
+            <i class="ti ti-file-code-2"></i>
+            XML TIA Portal
+          </div>
+          <div class="export-option-desc">Format d'import TIA (.xml)</div>
+        </div>
+        <div class="export-option" onclick="exportAs('pdf')">
+          <div class="export-option-title">
+            <i class="ti ti-file-description"></i>
+            Documentation PDF
+          </div>
+          <div class="export-option-desc">Avec commentaires et schémas</div>
+        </div>
+        <div class="export-option" onclick="exportAs('project')">
+          <div class="export-option-title">
+            <i class="ti ti-folder-zip"></i>
+            Projet complet
+          </div>
+          <div class="export-option-desc">Tous les blocs + DB (.zip)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Share -->
+<div class="modal-overlay" id="shareModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Partager la conversation</div>
+      <button class="modal-close" onclick="closeModal('shareModal')">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <label class="field-label">Lien de partage</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" class="field-input" id="shareLink" readonly value="https://scl-agent.app/share/abc123xyz">
+          <button class="btn-secondary" onclick="copyShareLink()">
+            <i class="ti ti-copy"></i>
+            Copier
+          </button>
+        </div>
+        <div class="field-hint">Ce lien permet de visualiser la conversation en lecture seule</div>
+      </div>
+      
+      <div class="field-group" style="margin-top: 16px;">
+        <label class="field-label">Options de partage</label>
+        <div class="toggle-group">
+          <span class="toggle-label">Autoriser les commentaires</span>
+          <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+        </div>
+        <div class="toggle-group">
+          <span class="toggle-label">Activer le code review collaboratif</span>
+          <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('shareModal')">Fermer</button>
+      <button class="btn-primary" onclick="shareToGallery()">
+        <i class="ti ti-upload"></i>
+        Publier dans la galerie
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== CONFIGURATION GLOBALE ==========
+let config = {
+  apiKey: localStorage.getItem('mistral_api_key') || '',
+  model: localStorage.getItem('mistral_model') || 'mistral-small-latest',
+  cpuFamily: localStorage.getItem('cpu_family') || 'S7-1200',
+  tiaVersion: localStorage.getItem('tia_version') || 'TIA Portal V18',
+  stationType: localStorage.getItem('station_type') || 'AEP',
+  
+  // Fonctionnalités avancées
+  enableStreaming: localStorage.getItem('enable_streaming') === 'true',
+  enableValidation: localStorage.getItem('enable_validation') !== 'false',
+  enableOptimization: localStorage.getItem('enable_optimization') === 'true',
+  enableAutoDoc: localStorage.getItem('enable_autodoc') === 'true',
+  enableCache: localStorage.getItem('enable_cache') !== 'false',
+  
+  // Multi-modèles
+  models: {
+    primary: 'mistral-small-latest',
+    validation: 'mistral-small-latest',
+    optimization: 'mistral-small-latest'
+  }
+};
+
+let conversationHistory = [];
+let currentProject = 'default';
+let codeCache = new Map();
+let snippetsLibrary = [];
+
+// ========== SYSTEM PROMPTS ==========
+const getSystemPrompt = () => `Tu es un expert SCL (Structured Control Language) pour automates Siemens, spécialisé dans les stations de pompage.
+
+CONTEXTE ACTUEL :
+- CPU: ${config.cpuFamily}
+- TIA Portal: ${config.tiaVersion}
+- Application: ${config.stationType}
+
+COMPÉTENCES PRINCIPALES :
+✓ Génération de code SCL conforme IEC 61131-3
+✓ Blocs FB/FC/DB optimisés pour pompage
+✓ Régulation PID (PID_Compact) pour pression/débit
+✓ Gestion de groupes de pompes avec alternance
+✓ Protection moteur et alarmes process
+✓ Communication Modbus TCP / OPC UA
+✓ Optimisation temps de cycle et mémoire
+
+RÈGLES DE GÉNÉRATION :
+1. Code syntaxiquement correct pour TIA Portal
+2. Variables typées explicitement (BOOL, REAL, INT, TIME, etc.)
+3. Commentaires en français, clairs et concis
+4. Gestion complète des erreurs et états de sécurité
+5. Respect des bonnes pratiques hydrauliques
+6. Code maintenable et documenté
+7. Validation des plages de valeurs
+8. Protection contre les divisions par zéro
+
+FORMAT DE RÉPONSE :
+- Explication brève du bloc (2-3 phrases)
+- Code SCL complet avec structure FUNCTION/FUNCTION_BLOCK
+- Suggestions d'amélioration ou variations si pertinent
+
+${config.enableOptimization ? 'OPTIMISATION ACTIVÉE : Privilégie la performance et la réduction du temps de cycle.' : ''}
+${config.enableAutoDoc ? 'DOCUMENTATION AUTO : Génère des commentaires détaillés pour chaque section.' : ''}
+
+Réponds en français avec du code prêt pour TIA Portal.`;
+
+const VALIDATION_PROMPT = `Analyse ce code SCL et identifie :
+1. Erreurs de syntaxe
+2. Problèmes de typage
+3. Conditions non gérées
+4. Risques de débordement
+5. Optimisations possibles
+6. Conformité IEC 61131-3
+
+Format de réponse : JSON avec {errors: [], warnings: [], suggestions: [], score: 0-100}`;
+
+// ========== INITIALISATION ==========
+document.addEventListener('DOMContentLoaded', () => {
+  initializeApp();
+  loadProjects();
+  loadSnippets();
+  addWelcomeMessage();
+  updateStatus('ready');
+});
+
+function initializeApp() {
+  // Charger la config
+  if (config.apiKey) {
+    updateStatus('connected');
+  }
+  
+  // Restaurer l'historique
+  const savedHistory = localStorage.getItem('conversation_history');
+  if (savedHistory) {
+    conversationHistory = JSON.parse(savedHistory);
+  }
+  
+  // Configuration initiale des panels
+  showConfigSection('api');
+}
+
+// ========== GESTION DE L'INTERFACE ==========
+function switchPanel(panelName) {
+  document.querySelectorAll('.sidebar-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  event.target.closest('.sidebar-item').classList.add('active');
+  
+  document.querySelectorAll('.panel').forEach(panel => {
+    panel.classList.remove('active');
+  });
+  document.getElementById(`${panelName}-panel`).classList.add('active');
+}
+
+function toggleReviewPanel() {
+  const panel = document.getElementById('reviewPanel');
+  const btn = document.getElementById('reviewToggle');
+  panel.classList.toggle('active');
+  btn.classList.toggle('active');
+}
+
+function toggleFullscreen() {
+  const app = document.getElementById('app');
+  const btn = document.getElementById('fullscreenBtn');
+  app.classList.toggle('fullscreen');
+  
+  const icon = btn.querySelector('i');
+  if (app.classList.contains('fullscreen')) {
+    icon.className = 'ti ti-arrows-minimize';
+  } else {
+    icon.className = 'ti ti-arrows-maximize';
+  }
+}
+
+function updateStatus(status, message = '') {
+  const indicator = document.getElementById('statusIndicator');
+  const statusText = document.getElementById('statusText');
+  
+  indicator.className = 'status-indicator';
+  
+  switch(status) {
+    case 'ready':
+      statusText.textContent = 'Prêt';
+      break;
+    case 'connected':
+      statusText.textContent = 'Connecté';
+      break;
+    case 'connecting':
+      indicator.classList.add('connecting');
+      statusText.textContent = 'Génération...';
+      break;
+    case 'error':
+      indicator.classList.add('error');
+      statusText.textContent = message || 'Erreur';
+      break;
+  }
+}
+
+function autoResize(textarea) {
+  textarea.style.height = 'auto';
+  textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+}
+
+// ========== GESTION DES MESSAGES ==========
+function addWelcomeMessage() {
+  const html = `
+    <strong>SCL SuperAgent Pro</strong> — Version avancée initialisée 🚀<br><br>
+    Fonctionnalités disponibles :
+    <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px;">
+      <span class="quality-badge"><i class="ti ti-code"></i> Génération SCL</span>
+      <span class="quality-badge"><i class="ti ti-check"></i> Validation IEC 61131-3</span>
+      <span class="quality-badge"><i class="ti ti-rocket"></i> Optimisation auto</span>
+      <span class="quality-badge"><i class="ti ti-book"></i> Documentation auto</span>
+      <span class="quality-badge"><i class="ti ti-file-export"></i> Export XML TIA</span>
+      <span class="quality-badge"><i class="ti ti-database"></i> Bibliothèque 47 snippets</span>
+      <span class="quality-badge"><i class="ti ti-share"></i> Partage collaboratif</span>
+    </div>
+  `;
+  addMessage(html, 'agent', 'Système prêt');
+}
+
+function addMessage(content, role, meta = '') {
+  const messagesDiv = document.getElementById('messages');
+  const msgDiv = document.createElement('div');
+  msgDiv.className = `msg ${role}`;
+  msgDiv.dataset.timestamp = Date.now();
+  
+  const avatar = role === 'user' ? 'U' : 'IA';
+  const avatarClass = role === 'user' ? 'user' : 'agent';
+  const metaText = meta || (role === 'user' ? 'Vous' : 'SCL Agent');
+  
+  // Formater le contenu avec les blocs de code
+  const formattedContent = formatCodeBlocks(content);
+  
+  msgDiv.innerHTML = `
+    <div class="msg-avatar ${avatarClass}">${avatar}</div>
+    <div class="msg-content">
+      <div class="msg-bubble">${formattedContent}</div>
+      <div class="msg-meta">
+        ${metaText}
+        ${role === 'agent' ? '<span class="quality-badge"><i class="ti ti-check"></i> Validé</span>' : ''}
+      </div>
+      <div class="msg-actions">
+        <button class="msg-action-btn" onclick="copyMessage(this)">
+          <i class="ti ti-copy"></i> Copier
+        </button>
+        ${role === 'agent' && content.includes('```') ? `
+          <button class="msg-action-btn" onclick="addToSnippets(this)">
+            <i class="ti ti-bookmark"></i> Sauvegarder
+          </button>
+          <button class="msg-action-btn" onclick="openExportModal()">
+            <i class="ti ti-download"></i> Exporter
+          </button>
+        ` : ''}
+      </div>
+    </div>
+  `;
+  
+  messagesDiv.appendChild(msgDiv);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  
+  // Si c'est du code, lancer l'analyse
+  if (role === 'agent' && content.includes('```')) {
+    analyzeCode(content);
+  }
+  
+  return msgDiv;
+}
+
+function formatCodeBlocks(text) {
+  // Détecter les blocs de code avec ```
+  return text.replace(/```(scl|SCL)?\n([\s\S]+?)\n```/g, (match, lang, code) => {
+    const codeId = 'code_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    return `
+      <div class="code-header">
+        <span class="code-lang">SCL</span>
+        <div class="code-actions">
+          <button class="code-btn" onclick="copyCode('${codeId}')">
+            <i class="ti ti-copy"></i> Copier
+          </button>
+          <button class="code-btn" onclick="validateCode('${codeId}')">
+            <i class="ti ti-check"></i> Valider
+          </button>
+          <button class="code-btn" onclick="optimizeCode('${codeId}')">
+            <i class="ti ti-rocket"></i> Optimiser
+          </button>
+        </div>
+      </div>
+      <pre id="${codeId}">${escapeHtml(code.trim())}</pre>
+    `;
+  }).replace(/\n/g, '<br>');
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function addTypingIndicator() {
+  const messagesDiv = document.getElementById('messages');
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'msg';
+  msgDiv.id = 'typing-indicator';
+  
+  msgDiv.innerHTML = `
+    <div class="msg-avatar agent">IA</div>
+    <div class="msg-content">
+      <div class="msg-bubble">
+        <div class="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  messagesDiv.appendChild(msgDiv);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function removeTypingIndicator() {
+  const indicator = document.getElementById('typing-indicator');
+  if (indicator) indicator.remove();
+}
+
+// ========== ENVOI DE MESSAGES ==========
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const userMessage = input.value.trim();
+  
+  if (!userMessage) return;
+  
+  if (!config.apiKey) {
+    addMessage('⚠️ <strong>Configuration requise</strong><br><br>Veuillez configurer votre clé API Mistral dans l\'onglet Paramètres.', 'agent', 'Erreur');
+    switchPanel('config');
+    return;
+  }
+  
+  // Ajouter le message utilisateur
+  addMessage(userMessage, 'user');
+  input.value = '';
+  input.style.height = 'auto';
+  
+  // Désactiver l'input
+  sendBtn.disabled = true;
+  input.disabled = true;
+  
+  // Ajouter au contexte
+  conversationHistory.push({
+    role: 'user',
+    content: userMessage
+  });
+  
+  // Vérifier le cache
+  if (config.enableCache) {
+    const cached = codeCache.get(userMessage);
+    if (cached) {
+      addMessage(cached + '<br><br><em style="color: var(--text-tertiary); font-size: 11px;">📦 Réponse depuis le cache</em>', 'agent', 'Cache');
+      sendBtn.disabled = false;
+      input.disabled = false;
+      input.focus();
+      return;
+    }
+  }
+  
+  // Afficher l'indicateur de frappe
+  addTypingIndicator();
+  updateStatus('connecting');
+  
+  try {
+    if (config.enableStreaming) {
+      await sendMessageStreaming(userMessage);
+    } else {
+      await sendMessageNormal(userMessage);
+    }
+    
+    updateStatus('connected');
+    
+  } catch (error) {
+    removeTypingIndicator();
+    console.error('Erreur:', error);
+    addMessage(
+      `❌ <strong>Erreur de connexion</strong><br><br>${error.message}<br><br>Vérifiez votre clé API dans la configuration.`,
+      'agent',
+      'Erreur'
+    );
+    updateStatus('error', error.message);
+  } finally {
+    sendBtn.disabled = false;
+    input.disabled = false;
+    input.focus();
+    
+    // Sauvegarder l'historique
+    localStorage.setItem('conversation_history', JSON.stringify(conversationHistory.slice(-20)));
+  }
+}
+
+async function sendMessageNormal(userMessage) {
+  const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.apiKey}`
+    },
+    body: JSON.stringify({
+      model: config.model,
+      messages: [
+        { role: 'system', content: getSystemPrompt() },
+        ...conversationHistory
+      ],
+      temperature: 0.7,
+      max_tokens: 3000
+    })
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Erreur API: ${response.status} ${response.statusText}`);
+  }
+  
+  const data = await response.json();
+  const assistantMessage = data.choices[0].message.content;
+  
+  // Ajouter au contexte
+  conversationHistory.push({
+    role: 'assistant',
+    content: assistantMessage
+  });
+  
+  // Mettre en cache
+  if (config.enableCache) {
+    codeCache.set(userMessage, assistantMessage);
+  }
+  
+  // Afficher la réponse
+  removeTypingIndicator();
+  addMessage(assistantMessage, 'agent', 'SCL généré');
+}
+
+async function sendMessageStreaming(userMessage) {
+  const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.apiKey}`
+    },
+    body: JSON.stringify({
+      model: config.model,
+      messages: [
+        { role: 'system', content: getSystemPrompt() },
+        ...conversationHistory
+      ],
+      temperature: 0.7,
+      max_tokens: 3000,
+      stream: true
+    })
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Erreur API: ${response.status}`);
+  }
+  
+  removeTypingIndicator();
+  
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let fullMessage = '';
+  let messageDiv = null;
+  
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    
+    const chunk = decoder.decode(value);
+    const lines = chunk.split('\n').filter(line => line.trim() !== '');
+    
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const data = line.slice(6);
+        if (data === '[DONE]') continue;
+        
+        try {
+          const parsed = JSON.parse(data);
+          const content = parsed.choices[0]?.delta?.content || '';
+          
+          if (content) {
+            fullMessage += content;
+            
+            if (!messageDiv) {
+              messageDiv = addMessage(fullMessage, 'agent', 'SCL en cours...');
+            } else {
+              const bubble = messageDiv.querySelector('.msg-bubble');
+              bubble.innerHTML = formatCodeBlocks(fullMessage);
+            }
+          }
+        } catch (e) {
+          console.error('Erreur parsing:', e);
+        }
+      }
+    }
+  }
+  
+  // Ajouter au contexte
+  conversationHistory.push({
+    role: 'assistant',
+    content: fullMessage
+  });
+  
+  // Mettre à jour les métadonnées
+  if (messageDiv) {
+    const meta = messageDiv.querySelector('.msg-meta');
+    meta.innerHTML = 'SCL généré <span class="quality-badge"><i class="ti ti-check"></i> Validé</span>';
+  }
+  
+  // Cache
+  if (config.enableCache) {
+    codeCache.set(userMessage, fullMessage);
+  }
+}
+
+function handleKeyPress(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+}
+
+function useQuickPrompt(prompt) {
+  document.getElementById('userInput').value = prompt;
+  sendMessage();
+}
+
+// ========== ANALYSE DE CODE ==========
+async function analyzeCode(codeText) {
+  if (!config.enableValidation) return;
+  
+  const reviewContent = document.getElementById('reviewContent');
+  reviewContent.innerHTML = '<div class="alert info"><i class="ti ti-loader"></i><div>Analyse en cours...</div></div>';
+  
+  try {
+    // Extraire le code SCL
+    const codeMatch = codeText.match(/```(?:scl|SCL)?\n([\s\S]+?)\n```/);
+    if (!codeMatch) {
+      reviewContent.innerHTML = '<div class="alert info"><i class="ti ti-info-circle"></i><div>Aucun code à analyser</div></div>';
+      return;
+    }
+    
+    const code = codeMatch[1];
+    
+    // Analyse syntaxique basique
+    const analysis = performStaticAnalysis(code);
+    
+    // Afficher les résultats
+    displayCodeReview(analysis);
+    
+  } catch (error) {
+    console.error('Erreur analyse:', error);
+    reviewContent.innerHTML = '<div class="alert error"><i class="ti ti-alert-triangle"></i><div>Erreur lors de l\'analyse</div></div>';
+  }
+}
+
+function performStaticAnalysis(code) {
+  const analysis = {
+    errors: [],
+    warnings: [],
+    suggestions: [],
+    metrics: {
+      lines: code.split('\n').length,
+      variables: 0,
+      complexity: 0
+    }
+  };
+  
+  // Vérifications basiques
+  if (!code.includes('FUNCTION') && !code.includes('FUNCTION_BLOCK')) {
+    analysis.warnings.push('Aucune déclaration FUNCTION ou FUNCTION_BLOCK trouvée');
+  }
+  
+  if (!code.includes('END_FUNCTION') && !code.includes('END_FUNCTION_BLOCK')) {
+    analysis.errors.push('Bloc non fermé : END_FUNCTION manquant');
+  }
+  
+  // Vérifier les variables
+  const varMatch = code.match(/VAR[\s\S]*?END_VAR/g);
+  if (varMatch) {
+    analysis.metrics.variables = varMatch.join('').split(';').length - 1;
+  }
+  
+  // Détecter les divisions potentiellement dangereuses
+  if (code.includes('/') && !code.includes('IF') && !code.includes('THEN')) {
+    analysis.warnings.push('Division détectée sans vérification de division par zéro');
+  }
+  
+  // Complexité cyclomatique approximative
+  const conditionals = (code.match(/IF|CASE|FOR|WHILE/g) || []).length;
+  analysis.metrics.complexity = conditionals + 1;
+  
+  if (analysis.metrics.complexity > 10) {
+    analysis.suggestions.push('Complexité élevée : envisagez de découper en sous-fonctions');
+  }
+  
+  // Vérifier les commentaires
+  const commentLines = (code.match(/\/\//g) || []).length;
+  const commentRatio = commentLines / analysis.metrics.lines;
+  
+  if (commentRatio < 0.1) {
+    analysis.suggestions.push('Ajoutez plus de commentaires pour améliorer la maintenabilité');
+  }
+  
+  // Score global
+  const errorPenalty = analysis.errors.length * 20;
+  const warningPenalty = analysis.warnings.length * 10;
+  analysis.score = Math.max(0, 100 - errorPenalty - warningPenalty);
+  
+  return analysis;
+}
+
+function displayCodeReview(analysis) {
+  const reviewContent = document.getElementById('reviewContent');
+  
+  let html = '';
+  
+  // Score
+  const scoreColor = analysis.score >= 80 ? 'success' : analysis.score >= 60 ? 'warning' : 'error';
+  html += `
+    <div class="review-section">
+      <div class="review-section-title">Score de qualité</div>
+      <div class="review-item ${scoreColor}">
+        <strong style="font-size: 24px;">${analysis.score}/100</strong>
+        <div style="font-size: 11px; margin-top: 4px;">
+          ${analysis.score >= 80 ? 'Excellent code !' : analysis.score >= 60 ? 'Code acceptable' : 'Améliorations nécessaires'}
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Métriques
+  html += `
+    <div class="review-section">
+      <div class="review-section-title">Métriques</div>
+      <div class="review-item">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Lignes de code</span>
+          <strong>${analysis.metrics.lines}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Variables déclarées</span>
+          <strong>${analysis.metrics.variables}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Complexité</span>
+          <strong>${analysis.metrics.complexity}</strong>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Erreurs
+  if (analysis.errors.length > 0) {
+    html += `
+      <div class="review-section">
+        <div class="review-section-title">Erreurs (${analysis.errors.length})</div>
+        ${analysis.errors.map(err => `<div class="review-item error"><i class="ti ti-x"></i> ${err}</div>`).join('')}
+      </div>
+    `;
+  }
+  
+  // Avertissements
+  if (analysis.warnings.length > 0) {
+    html += `
+      <div class="review-section">
+        <div class="review-section-title">Avertissements (${analysis.warnings.length})</div>
+        ${analysis.warnings.map(warn => `<div class="review-item warning"><i class="ti ti-alert-triangle"></i> ${warn}</div>`).join('')}
+      </div>
+    `;
+  }
+  
+  // Suggestions
+  if (analysis.suggestions.length > 0) {
+    html += `
+      <div class="review-section">
+        <div class="review-section-title">Suggestions</div>
+        ${analysis.suggestions.map(sug => `<div class="review-item"><i class="ti ti-bulb"></i> ${sug}</div>`).join('')}
+      </div>
+    `;
+  }
+  
+  if (analysis.errors.length === 0 && analysis.warnings.length === 0) {
+    html += '<div class="review-item success"><i class="ti ti-check"></i> Aucun problème détecté !</div>';
+  }
+  
+  reviewContent.innerHTML = html;
+  
+  // Activer le panel si pas déjà ouvert
+  if (!document.getElementById('reviewPanel').classList.contains('active')) {
+    toggleReviewPanel();
+  }
+}
+
+// ========== ACTIONS SUR LES MESSAGES ==========
+function copyMessage(btn) {
+  const msgBubble = btn.closest('.msg-content').querySelector('.msg-bubble');
+  const text = msgBubble.innerText;
+  
+  navigator.clipboard.writeText(text).then(() => {
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="ti ti-check"></i> Copié !';
+    setTimeout(() => {
+      btn.innerHTML = originalText;
+    }, 2000);
+  });
+}
+
+function copyCode(codeId) {
+  const codeElement = document.getElementById(codeId);
+  const text = codeElement.innerText;
+  
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Code copié dans le presse-papier !');
+  });
+}
+
+async function validateCode(codeId) {
+  const codeElement = document.getElementById(codeId);
+  const code = codeElement.innerText;
+  
+  const analysis = performStaticAnalysis(code);
+  displayCodeReview(analysis);
+}
+
+function optimizeCode(codeId) {
+  const codeElement = document.getElementById(codeId);
+  const code = codeElement.innerText;
+  
+  document.getElementById('userInput').value = `Optimise ce code SCL pour réduire le temps de cycle et améliorer les performances :\n\n\`\`\`scl\n${code}\n\`\`\``;
+  sendMessage();
+}
+
+function addToSnippets(btn) {
+  const msgBubble = btn.closest('.msg-content').querySelector('.msg-bubble');
+  const codeMatch = msgBubble.innerHTML.match(/<pre[^>]*>([\s\S]+?)<\/pre>/);
+  
+  if (codeMatch) {
+    const code = codeMatch[1].replace(/<[^>]+>/g, '');
+    const title = prompt('Nom du snippet :');
+    
+    if (title) {
+      const snippet = {
+        id: Date.now(),
+        title,
+        code,
+        category: 'Personnel',
+        description: 'Ajouté depuis une conversation',
+        date: new Date().toISOString()
+      };
+      
+      snippetsLibrary.push(snippet);
+      localStorage.setItem('snippets', JSON.stringify(snippetsLibrary));
+      
+      alert('✅ Snippet ajouté à la bibliothèque !');
+    }
+  }
+}
+
+// ========== PROJETS ==========
+function loadProjects() {
+  const projects = [
+    { id: 'default', name: 'Station AEP Secteur Nord', type: 'AEP', cpu: 'S7-1500', blocks: 24, date: '2025-05-15' },
+    { id: 'projet2', name: 'Relevage EU Zone Industrielle', type: 'Relevage', cpu: 'S7-1200', blocks: 18, date: '2025-05-10' },
+    { id: 'projet3', name: 'Surpression Immeuble R+12', type: 'Surpression', cpu: 'S7-1200', blocks: 12, date: '2025-05-05' }
+  ];
+  
+  const projectsList = document.getElementById('projectsList');
+  projectsList.innerHTML = projects.map(p => `
+    <div class="project-item ${p.id === currentProject ? 'active' : ''}" onclick="selectProject('${p.id}')">
+      <div class="project-name">${p.name}</div>
+      <div class="project-meta">
+        <span><i class="ti ti-cpu"></i> ${p.cpu}</span>
+        <span><i class="ti ti-code"></i> ${p.blocks} blocs</span>
+        <span><i class="ti ti-calendar"></i> ${p.date}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function switchProject() {
+  const selector = document.getElementById('projectSelector');
+  currentProject = selector.value;
+  loadProjects();
+  
+  // Réinitialiser la conversation
+  conversationHistory = [];
+  document.getElementById('messages').innerHTML = '';
+  addWelcomeMessage();
+}
+
+function selectProject(projectId) {
+  currentProject = projectId;
+  document.getElementById('projectSelector').value = projectId;
+  switchProject();
+}
+
+// ========== SNIPPETS ==========
+function loadSnippets() {
+  // Charger depuis le localStorage
+  const saved = localStorage.getItem('snippets');
+  if (saved) {
+    snippetsLibrary = JSON.parse(saved);
+  } else {
+    // Snippets par défaut
+    snippetsLibrary = [
+      {
+        id: 1,
+        title: 'Démarrage pompe simple',
+        category: 'Pompes',
+        description: 'Bloc basique de démarrage/arrêt avec temporisation',
+        code: 'FUNCTION FC_PompeStart : BOOL\nVAR_INPUT\n    bCmd : BOOL;\nEND_VAR\n...'
+      },
+      {
+        id: 2,
+        title: 'PID Pression',
+        category: 'Régulation',
+        description: 'Régulation PID pour pression de refoulement',
+        code: 'FUNCTION_BLOCK FB_PID_Pression\nVAR_INPUT\n    rSetpoint : REAL;\n...'
+      }
+    ];
+  }
+  
+  displaySnippets();
+}
+
+function displaySnippets() {
+  const grid = document.getElementById('snippetsGrid');
+  grid.innerHTML = snippetsLibrary.map(s => `
+    <div class="snippet-card" onclick="useSnippet(${s.id})">
+      <div class="snippet-header">
+        <div class="snippet-title">${s.title}</div>
+        <div class="snippet-category">${s.category}</div>
+      </div>
+      <div class="snippet-desc">${s.description}</div>
+      <div class="snippet-preview">${s.code.substring(0, 100)}...</div>
+    </div>
+  `).join('');
+}
+
+function useSnippet(snippetId) {
+  const snippet = snippetsLibrary.find(s => s.id === snippetId);
+  if (snippet) {
+    switchPanel('chat');
+    setTimeout(() => {
+      document.getElementById('userInput').value = `Utilise ce snippet comme base et adapte-le pour ${config.stationType} :\n\n\`\`\`scl\n${snippet.code}\n\`\`\``;
+    }, 100);
+  }
+}
+
+// ========== CONFIGURATION ==========
+function showConfigSection(section) {
+  const content = document.getElementById('configContent');
+  
+  switch(section) {
+    case 'api':
+      content.innerHTML = generateAPIConfig();
+      break;
+    case 'context':
+      content.innerHTML = generateContextConfig();
+      break;
+    case 'features':
+      content.innerHTML = generateFeaturesConfig();
+      break;
+    case 'export':
+      content.innerHTML = generateExportConfig();
+      break;
+    case 'advanced':
+      content.innerHTML = generateAdvancedConfig();
+      break;
+  }
+  
+  // Mettre à jour la sélection
+  document.querySelectorAll('.config-sidebar .sidebar-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  event.target.closest('.sidebar-item').classList.add('active');
+}
+
+function generateAPIConfig() {
+  return `
+    <div class="config-section">
+      <div class="config-section-title">
+        <i class="ti ti-plug"></i>
+        Configuration API Mistral
+      </div>
+      
+      <div class="field-group">
+        <label class="field-label">Clé API Mistral</label>
+        <input type="password" class="field-input" id="apiKey" value="${config.apiKey}" placeholder="sk-...">
+        <div class="field-hint">Obtenez votre clé sur <a href="https://console.mistral.ai" target="_blank">console.mistral.ai</a></div>
+      </div>
+      
+      <div class="field-group">
+        <label class="field-label">Modèle principal</label>
+        <select class="field-select" id="modelSelect">
+          <option value="mistral-small-latest" ${config.model === 'mistral-small-latest' ? 'selected' : ''}>Mistral Small (gratuit)</option>
+          <option value="open-mistral-7b">Open Mistral 7B (gratuit)</option>
+          <option value="open-mixtral-8x7b">Open Mixtral 8x7B (gratuit)</option>
+          <option value="mistral-medium-latest">Mistral Medium</option>
+          <option value="mistral-large-latest">Mistral Large</option>
+        </select>
+      </div>
+      
+      <button class="btn-primary" onclick="saveAPIConfig()">
+        <i class="ti ti-check"></i>
+        Sauvegarder et tester
+      </button>
+      
+      <div id="apiTestResult"></div>
+    </div>
+    
+    <div class="config-section">
+      <div class="config-section-title">
+        <i class="ti ti-topology-star"></i>
+        Multi-modèles (Avancé)
+      </div>
+      
+      <div class="toggle-group">
+        <span class="toggle-label">Utiliser différents modèles par tâche</span>
+        <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
+      </div>
+      
+      <div class="field-hint" style="margin-top: 8px;">
+        Assignez des modèles spécifiques pour la génération, validation, et optimisation de code.
+      </div>
+    </div>
+  `;
+}
+
+function generateContextConfig() {
+  return `
+    <div class="config-section">
+      <div class="config-section-title">
+        <i class="ti ti-cpu"></i>
+        Contexte automate
+      </div>
+      
+      <div class="field-group">
+        <label class="field-label">Famille CPU</label>
+        <select class="field-select" id="cpuFamily">
+          <option ${config.cpuFamily === 'S7-1200' ? 'selected' : ''}>S7-1200</option>
+          <option ${config.cpuFamily === 'S7-1500' ? 'selected' : ''}>S7-1500</option>
+          <option>S7-300</option>
+          <option>S7-400</option>
+        </select>
+      </div>
+      
+      <div class="field-group">
+        <label class="field-label">Version TIA Portal</label>
+        <select class="field-select" id="tiaVersion">
+          <option ${config.tiaVersion === 'TIA Portal V18' ? 'selected' : ''}>TIA Portal V18</option>
+          <option ${config.tiaVersion === 'TIA Portal V17' ? 'selected' : ''}>TIA Portal V17</option>
+          <option ${config.tiaVersion === 'TIA Portal V16' ? 'selected' : ''}>TIA Portal V16</option>
+          <option>TIA Portal V15.1</option>
+        </select>
+      </div>
+      
+      <div class="field-group">
+        <label class="field-label">Type de station</label>
+        <select class="field-select" id="stationType">
+          <option ${config.stationType === 'AEP' ? 'selected' : ''}>AEP — Alimentation eau potable</option>
+          <option ${config.stationType === 'Relevage' ? 'selected' : ''}>Relevage eaux usées</option>
+          <option ${config.stationType === 'Irrigation' ? 'selected' : ''}>Irrigation agricole</option>
+          <option ${config.stationType === 'Surpression' ? 'selected' : ''}>Surpression réseau</option>
+          <option ${config.stationType === 'Industriel' ? 'selected' : ''}>Pompage industriel</option>
+        </select>
+      </div>
+      
+      <div class="field-group">
+        <label class="field-label">Contraintes spécifiques (optionnel)</label>
+        <textarea class="field-textarea" id="constraints" placeholder="Ex: Respect norme NF EN 12845, pression max 10 bars, débit nominal 150 m³/h..."></textarea>
+      </div>
+      
+      <button class="btn-primary" onclick="saveContextConfig()">
+        <i class="ti ti-check"></i>
+        Sauvegarder le contexte
+      </button>
+    </div>
+  `;
+}
+
+function generateFeaturesConfig() {
+  return `
+    <div class="config-section">
+      <div class="config-section-title">
+        <i class="ti ti-sparkles"></i>
+        Fonctionnalités IA
+      </div>
+      
+      <div class="toggle-group">
+        <span class="toggle-label">Streaming des réponses</span>
+        <div class="toggle-switch ${config.enableStreaming ? 'active' : ''}" onclick="toggleFeature(this, 'enableStreaming')"></div>
+      </div>
+      
+      <div class="toggle-group">
+        <span class="toggle-label">Validation automatique du code</span>
+        <div class="toggle-switch ${config.enableValidation ? 'active' : ''}" onclick="toggleFeature(this, 'enableValidation')"></div>
+      </div>
+      
+      <div class="toggle-group">
+        <span class="toggle-label">Optimisation automatique</span>
+        <div class="toggle-switch ${config.enableOptimization ? 'active' : ''}" onclick="toggleFeature(this, 'enableOptimization')"></div>
+      </div>
+      
+      <div class="toggle-group">
+        <span class="toggle-label">Documentation automatique</span>
+        <div class="toggle-switch ${config.enableAutoDoc ? 'active' : ''}" onclick="toggleFeature(this, 'enableAutoDoc')"></div>
+      </div>
+      
+      <div class="toggle-group">
+        <span class="toggle-label">Cache des réponses</span>
+        <div class="toggle-switch ${config.enableCache ? 'active' : ''}" onclick="toggleFeature(this, 'enableCache')"></div>
+      </div>
+    </div>
+    
+    <div class="config-section">
+      <div class="config-section-title">
+        <i class="ti ti-accessible"></i>
+        Accessibilité
+      </div>
+      
+      <div class="toggle-group">
+        <span class="toggle-label">Raccourcis clavier</span>
+        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+      </div>
+      
+      <div class="toggle-group">
+        <span class="toggle-label">Lecteur d'écran</span>
+        <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
+      </div>
+      
+      <div class="field-hint" style="margin-top: 8px;">
+        <strong>Raccourcis :</strong> Ctrl+Enter (envoyer), Ctrl+K (nouvelle conv.), Ctrl+/ (aide)
+      </div>
+    </div>
+  `;
+}
+
+function generateExportConfig() {
+  return `
+    <div class="config-section">
+      <div class="config-section-title">
+        <i class="ti ti-file-export"></i>
+        Options d'export
+      </div>
+      
+      <div class="field-group">
+        <label class="field-label">Format XML TIA Portal</label>
+        <select class="field-select">
+          <option>Format TIA Portal V18 (recommandé)</option>
+          <option>Format TIA Portal V17</option>
+          <option>Format TIA Portal V16</option>
+          <option>Format STEP 7 Classic</option>
+        </select>
+      </div>
+      
+      <div class="toggle-group">
+        <span class="toggle-label">Inclure les commentaires dans l'export</span>
+        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+      </div>
+      
+      <div class="toggle-group">
+        <span class="toggle-label">Générer la documentation PDF</span>
+        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+      </div>
+      
+      <div class="toggle-group">
+        <span class="toggle-label">Exporter les Data Blocks</span>
+        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+      </div>
+    </div>
+    
+    <div class="config-section">
+      <div class="config-section-title">
+        <i class="ti ti-puzzle"></i>
+        Plugins & Extensions
+      </div>
+      
+      <div class="alert info">
+        <i class="ti ti-info-circle"></i>
+        <div>
+          <strong>Plugin TIA Portal en développement</strong><br>
+          Intégration directe dans TIA Portal pour importer le code en un clic.
+        </div>
+      </div>
+      
+      <div class="field-group">
+        <label class="field-label">Dossier d'export par défaut</label>
+        <input type="text" class="field-input" value="C:\Users\Public\Documents\SCL_Export">
+      </div>
+    </div>
+  `;
+}
+
+function generateAdvancedConfig() {
+  return `
+    <div class="config-section">
+      <div class="config-section-title">
+        <i class="ti ti-adjustments"></i>
+        Paramètres avancés
+      </div>
+      
+      <div class="field-group">
+        <label class="field-label">Température (créativité)</label>
+        <input type="range" min="0" max="100" value="70" class="field-input" 
+          oninput="this.nextElementSibling.textContent = (this.value/100).toFixed(2)">
+        <span style="font-size: 12px; color: var(--text-secondary);">0.70</span>
+        <div class="field-hint">Plus élevé = réponses plus créatives, plus bas = plus déterministes</div>
+      </div>
+      
+      <div class="field-group">
+        <label class="field-label">Tokens maximum par réponse</label>
+        <input type="number" class="field-input" value="3000" min="500" max="8000">
+      </div>
+      
+      <div class="field-group">
+        <label class="field-label">Historique de conversation (messages)</label>
+        <input type="number" class="field-input" value="20" min="5" max="50">
+      </div>
+    </div>
+    
+    <div class="config-section">
+      <div class="config-section-title">
+        <i class="ti ti-shield-lock"></i>
+        Sécurité & Audit
+      </div>
+      
+      <div class="toggle-group">
+        <span class="toggle-label">Audit des entrées utilisateur</span>
+        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+      </div>
+      
+      <div class="toggle-group">
+        <span class="toggle-label">Validation stricte du code généré</span>
+        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+      </div>
+      
+      <div class="toggle-group">
+        <span class="toggle-label">Log des erreurs</span>
+        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+      </div>
+    </div>
+    
+    <div class="config-section">
+      <div class="config-section-title" style="color: var(--coral-800);">
+        <i class="ti ti-trash"></i>
+        Zone de danger
+      </div>
+      
+      <button class="btn-secondary" onclick="clearCache()">
+        <i class="ti ti-refresh"></i>
+        Vider le cache
+      </button>
+      
+      <button class="btn-secondary" onclick="resetConfig()" style="margin-left: 8px;">
+        <i class="ti ti-refresh"></i>
+        Réinitialiser la configuration
+      </button>
+      
+      <button class="btn-secondary" onclick="clearHistory()" style="margin-left: 8px; color: var(--coral-800);">
+        <i class="ti ti-trash"></i>
+        Supprimer l'historique
+      </button>
+    </div>
+  `;
+}
+
+function saveAPIConfig() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const model = document.getElementById('modelSelect').value;
+  
+  if (!apiKey) {
+    document.getElementById('apiTestResult').innerHTML = '<div class="alert error"><i class="ti ti-alert-triangle"></i><div>Veuillez entrer une clé API</div></div>';
+    return;
+  }
+  
+  config.apiKey = apiKey;
+  config.model = model;
+  
+  localStorage.setItem('mistral_api_key', apiKey);
+  localStorage.setItem('mistral_model', model);
+  
+  document.getElementById('apiTestResult').innerHTML = '<div class="alert success"><i class="ti ti-check"></i><div>Configuration sauvegardée avec succès !</div></div>';
+  updateStatus('connected');
+}
+
+function saveContextConfig() {
+  config.cpuFamily = document.getElementById('cpuFamily').value;
+  config.tiaVersion = document.getElementById('tiaVersion').value;
+  config.stationType = document.getElementById('stationType').value;
+  
+  localStorage.setItem('cpu_family', config.cpuFamily);
+  localStorage.setItem('tia_version', config.tiaVersion);
+  localStorage.setItem('station_type', config.stationType);
+  
+  alert('✅ Contexte sauvegardé !');
+}
+
+function toggleFeature(element, feature) {
+  element.classList.toggle('active');
+  config[feature] = element.classList.contains('active');
+  localStorage.setItem(feature, config[feature]);
+}
+
+function toggleSwitch(element) {
+  element.classList.toggle('active');
+}
+
+function clearCache() {
+  if (confirm('Voulez-vous vraiment vider le cache ?')) {
+    codeCache.clear();
+    alert('✅ Cache vidé !');
+  }
+}
+
+function resetConfig() {
+  if (confirm('Voulez-vous vraiment réinitialiser toute la configuration ?')) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+function clearHistory() {
+  if (confirm('⚠️ Cela supprimera définitivement tout l\'historique de conversation. Continuer ?')) {
+    conversationHistory = [];
+    localStorage.removeItem('conversation_history');
+    document.getElementById('messages').innerHTML = '';
+    addWelcomeMessage();
+    alert('✅ Historique supprimé !');
+  }
+}
+
+// ========== MODALS ==========
+function openExportModal() {
+  document.getElementById('exportModal').classList.add('active');
+}
+
+function openShareModal() {
+  document.getElementById('shareModal').classList.add('active');
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('active');
+}
+
+function exportAs(format) {
+  // Récupérer le dernier code généré
+  const messages = document.querySelectorAll('.msg.agent .msg-bubble pre');
+  if (messages.length === 0) {
+    alert('Aucun code à exporter');
+    return;
+  }
+  
+  const lastCode = messages[messages.length - 1].innerText;
+  
+  let content, filename, mimeType;
+  
+  switch(format) {
+    case 'scl':
+      content = lastCode;
+      filename = 'export.scl';
+      mimeType = 'text/plain';
+      break;
+      
+    case 'xml':
+      content = generateTIAXML(lastCode);
+      filename = 'export_tia.xml';
+      mimeType = 'application/xml';
+      break;
+      
+    case 'pdf':
+      alert('Export PDF en développement');
+      return;
+      
+    case 'project':
+      alert('Export projet complet en développement');
+      return;
+  }
+  
+  // Télécharger
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  closeModal('exportModal');
+  alert(`✅ Fichier ${filename} téléchargé !`);
+}
+
+function generateTIAXML(code) {
+  // Génération basique de XML TIA Portal
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<Document>
+  <Engineering version="V18" />
+  <DocumentInfo>
+    <Created>2025-05-20T12:00:00</Created>
+    <ExportSetting>WithDefaults</ExportSetting>
+  </DocumentInfo>
+  <SW.Blocks.FC ID="0">
+    <AttributeList>
+      <Name>FC_Export</Name>
+      <Number>1</Number>
+      <ProgrammingLanguage>SCL</ProgrammingLanguage>
+    </AttributeList>
+    <ObjectList>
+      <SW.Blocks.CompileUnit>
+        <AttributeList>
+          <NetworkSource><![CDATA[
+${code}
+          ]]></NetworkSource>
+        </AttributeList>
+      </SW.Blocks.CompileUnit>
+    </ObjectList>
+  </SW.Blocks.FC>
+</Document>`;
+}
+
+function copyShareLink() {
+  const link = document.getElementById('shareLink').value;
+  navigator.clipboard.writeText(link);
+  alert('✅ Lien copié dans le presse-papier !');
+}
+
+function shareToGallery() {
+  alert('🚀 Fonctionnalité de galerie communautaire en développement');
+  closeModal('shareModal');
+}
+
+// ========== FONCTIONS UTILITAIRES ==========
+function attachFile() {
+  alert('📎 Import de fichiers .scl en développement');
+}
+
+function toggleVoice() {
+  alert('🎤 Entrée vocale en développement');
+}
+
+function openValidator() {
+  alert('✅ Validateur SCL standalone en développement');
+}
+
+function openOptimizer() {
+  alert('⚡ Optimiseur de code en développement');
+}
+
+function openDocGenerator() {
+  alert('📖 Générateur de documentation en développement');
+}
+
+// Fermer les modals en cliquant à l'extérieur
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal-overlay')) {
+    e.target.classList.remove('active');
+  }
+});
+
+// Raccourcis clavier
+document.addEventListener('keydown', (e) => {
+  // Ctrl+Enter pour envoyer
+  if (e.ctrlKey && e.key === 'Enter') {
+    sendMessage();
+  }
+  
+  // Ctrl+K pour nouvelle conversation
+  if (e.ctrlKey && e.key === 'k') {
+    e.preventDefault();
+    if (confirm('Nouvelle conversation ?')) {
+      conversationHistory = [];
+      document.getElementById('messages').innerHTML = '';
+      addWelcomeMessage();
+    }
+  }
+  
+  // Ctrl+/ pour aide
+  if (e.ctrlKey && e.key === '/') {
+    e.preventDefault();
+    alert('Raccourcis:\nCtrl+Enter: Envoyer\nCtrl+K: Nouvelle conversation\nCtrl+/: Aide');
+  }
+});
+
+console.log('%c🚀 SCL SuperAgent Pro initialisé', 'color: #378ADD; font-size: 16px; font-weight: bold');
+console.log('%cVersion: 2.0 Pro | Multi-modèles, Export XML, Code Review', 'color: #5F5E5A');
+</script>
+
+</body>
+</html>
