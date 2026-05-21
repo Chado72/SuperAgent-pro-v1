@@ -4,2883 +4,723 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SCL SuperAgent Pro - TIA Portal</title>
+<!-- Tabler Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
   :root {
     --blue-50: #E6F1FB; --blue-200: #85B7EB; --blue-400: #378ADD; --blue-800: #0C447C;
-    --teal-50: #E1F5EE; --teal-400: #1D9E75; --teal-800: #085041;
-    --amber-50: #FAEEDA; --amber-400: #BA7517; --amber-800: #633806;
-    --gray-50: #F1EFE8; --gray-200: #B4B2A9; --gray-600: #5F5E5A;
-    --coral-50: #FAECE7; --coral-400: #D85A30; --coral-800: #712B13;
-    --purple-50: #F3E8FF; --purple-400: #9333EA; --purple-800: #581C87;
-    --bg-primary: #ffffff; --bg-secondary: #f8f8f6; --bg-tertiary: #edebe4;
-    --text-primary: #2c2c2a; --text-secondary: #5f5e5a; --text-tertiary: #888780;
-    --border-primary: rgba(0,0,0,0.4); --border-secondary: rgba(0,0,0,0.3); --border-tertiary: rgba(0,0,0,0.15);
+    --gray-50: #F8F9FA; --gray-100: #F1F3F5; --gray-200: #E9ECEF; --gray-600: #495057; --gray-800: #212529;
+    --success: #40C057; --warning: #FFD43B; --danger: #FA5252;
+    --sidebar-width: 280px; --header-height: 60px;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg-primary: #1a1a18; --bg-secondary: #252523; --bg-tertiary: #2f2f2d;
-      --text-primary: #e8e6dc; --text-secondary: #c2c0b6; --text-tertiary: #9c9a92;
-      --border-primary: rgba(255,255,255,0.4); --border-secondary: rgba(255,255,255,0.3); --border-tertiary: rgba(255,255,255,0.15);
-    }
-  }
-  body { 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg-secondary); color: var(--text-primary);
-  }
+  body { display: flex; height: 100vh; background: var(--gray-50); color: var(--gray-800); overflow: hidden; }
   
-  /* Layout principal */
-  #app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-  #app.fullscreen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; }
-
-  .topbar {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 16px;
-    border-bottom: 0.5px solid var(--border-tertiary);
-    background: var(--bg-primary);
-    flex-shrink: 0;
-  }
-  .logo-badge {
-    background: linear-gradient(135deg, var(--blue-400), var(--purple-400));
-    color: #fff; font-size: 11px; font-weight: 600; 
-    padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px;
-  }
-  .agent-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
-  .agent-sub { font-size: 11px; color: var(--text-secondary); margin-left: auto; }
-  
-  .topbar-actions {
-    display: flex; gap: 6px; align-items: center;
-  }
-  .icon-btn {
-    width: 28px; height: 28px; border-radius: 6px;
-    border: 0.5px solid var(--border-tertiary);
-    background: var(--bg-secondary); color: var(--text-secondary);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all .15s; font-size: 15px;
-  }
-  .icon-btn:hover { background: var(--blue-50); color: var(--blue-800); border-color: var(--blue-200); }
-  .icon-btn.active { background: var(--blue-400); color: white; border-color: var(--blue-400); }
-  
-  .status-indicator {
-    display: flex; align-items: center; gap: 6px;
-    padding: 3px 8px; border-radius: 12px;
-    background: var(--teal-50); border: 0.5px solid var(--teal-400);
-    font-size: 10px; font-weight: 500; color: var(--teal-800);
-  }
-  .status-dot { 
-    width: 6px; height: 6px; border-radius: 50%; background: var(--teal-400);
-  }
-  .status-indicator.connecting .status-dot { background: var(--amber-400); animation: pulse 1.5s ease-in-out infinite; }
-  .status-indicator.error { background: var(--coral-50); border-color: var(--coral-400); color: var(--coral-800); }
-  .status-indicator.error .status-dot { background: var(--coral-400); }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-  .layout { display: flex; flex: 1; min-height: 0; }
-
   /* Sidebar */
-  .sidebar {
-    width: 220px; min-width: 220px;
-    border-right: 0.5px solid var(--border-tertiary);
-    background: var(--bg-secondary);
-    display: flex; flex-direction: column;
-    overflow-y: auto;
-  }
-  .sidebar-header {
-    padding: 12px 14px;
-    border-bottom: 0.5px solid var(--border-tertiary);
-    background: var(--bg-primary);
-  }
-  .project-selector {
-    width: 100%; padding: 6px 10px; font-size: 12px;
-    border-radius: 6px; border: 0.5px solid var(--border-secondary);
-    background: var(--bg-primary); color: var(--text-primary);
-    font-family: inherit;
-  }
+  .sidebar { width: var(--sidebar-width); background: var(--blue-800); color: white; display: flex; flex-direction: column; transition: transform 0.3s; z-index: 100; }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+  .sidebar-header i { font-size: 24px; color: var(--blue-200); }
+  .sidebar-header h1 { font-size: 18px; font-weight: 600; }
+  .nav-menu { flex: 1; overflow-y: auto; padding: 10px 0; }
+  .nav-item { padding: 12px 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background 0.2s; color: var(--blue-50); text-decoration: none; }
+  .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left: 4px solid var(--blue-200); }
+  .nav-item i { font-size: 20px; }
+  .sidebar-footer { padding: 15px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; color: var(--blue-200); text-align: center; }
   
-  .sidebar-section { 
-    font-size: 10px; font-weight: 600; color: var(--text-tertiary);
-    padding: 12px 14px 4px; letter-spacing: 0.8px; text-transform: uppercase; 
-  }
-  .sidebar-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 7px 14px; cursor: pointer; font-size: 13px;
-    color: var(--text-secondary); transition: all .15s;
-    border-left: 2px solid transparent;
-  }
-  .sidebar-item:hover { background: var(--bg-primary); color: var(--text-primary); }
-  .sidebar-item.active {
-    background: var(--bg-primary);
-    color: var(--blue-800); font-weight: 500;
-    border-left-color: var(--blue-400);
-  }
-  .sidebar-item i { font-size: 15px; width: 18px; }
-  .sidebar-item .badge {
-    margin-left: auto; font-size: 9px; font-weight: 600;
-    padding: 2px 5px; border-radius: 4px;
-    background: var(--blue-50); color: var(--blue-800);
-  }
-
-  /* Main content */
-  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-primary); }
-
-  .panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
-  .panel.active { display: flex; }
-
-  /* Chat panel */
-  .chat-container { display: flex; flex: 1; min-height: 0; }
+  /* Main Content */
+  .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
+  .top-bar { height: var(--header-height); background: white; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+  .top-bar-title { font-weight: 600; color: var(--gray-800); display: flex; align-items: center; gap: 10px; }
+  .top-bar-actions { display: flex; gap: 10px; }
   
-  .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  /* Panels */
+  .panel { display: none; flex: 1; overflow: hidden; padding: 20px; }
+  .panel.active { display: flex; flex-direction: column; }
   
-  .chat-messages {
-    flex: 1; overflow-y: auto; padding: 16px;
-    display: flex; flex-direction: column; gap: 12px;
-  }
-  .msg { display: flex; gap: 10px; animation: slideIn 0.3s ease; }
-  .msg.user { flex-direction: row-reverse; }
-  @keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-  
-  .msg-avatar {
-    width: 32px; height: 32px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 600; flex-shrink: 0;
-  }
-  .msg-avatar.agent { background: var(--blue-50); color: var(--blue-800); border: 0.5px solid var(--blue-200); }
-  .msg-avatar.user { background: var(--teal-50); color: var(--teal-800); border: 0.5px solid var(--teal-400); }
-  
-  .msg-content { flex: 1; max-width: 75%; }
-  .msg-bubble {
-    padding: 10px 14px; border-radius: 10px;
-    font-size: 13px; line-height: 1.6;
-    border: 0.5px solid var(--border-tertiary);
-    background: var(--bg-primary); color: var(--text-primary);
-  }
-  .msg.user .msg-bubble { background: var(--blue-50); border-color: var(--blue-200); }
-  @media (prefers-color-scheme: dark) {
-    .msg.user .msg-bubble { background: rgba(55, 138, 221, 0.15); border-color: rgba(55, 138, 221, 0.3); }
-  }
-  
-  .msg-bubble pre {
-    background: var(--bg-secondary);
-    border: 0.5px solid var(--border-tertiary);
-    border-radius: 6px; padding: 12px; margin: 8px 0;
-    font-size: 11px; line-height: 1.5;
-    font-family: 'Courier New', monospace;
-    overflow-x: auto; color: var(--text-primary);
-    position: relative;
-  }
-  .code-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 8px; padding-bottom: 6px;
-    border-bottom: 0.5px solid var(--border-tertiary);
-  }
-  .code-lang {
-    font-size: 10px; font-weight: 600; color: var(--text-tertiary);
-    text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .code-actions {
-    display: flex; gap: 4px;
-  }
-  .code-btn {
-    padding: 3px 8px; font-size: 10px; border-radius: 4px;
-    border: 0.5px solid var(--border-secondary);
-    background: var(--bg-primary); color: var(--text-secondary);
-    cursor: pointer; transition: all .15s;
-  }
-  .code-btn:hover { background: var(--blue-50); color: var(--blue-800); border-color: var(--blue-200); }
-  
-  .msg-actions {
-    display: flex; gap: 6px; margin-top: 6px;
-    opacity: 0; transition: opacity .2s;
-  }
-  .msg:hover .msg-actions { opacity: 1; }
-  .msg-action-btn {
-    padding: 3px 8px; font-size: 11px; border-radius: 4px;
-    border: 0.5px solid var(--border-secondary);
-    background: var(--bg-secondary); color: var(--text-secondary);
-    cursor: pointer; transition: all .15s;
-    display: flex; align-items: center; gap: 4px;
-  }
-  .msg-action-btn:hover { background: var(--blue-50); color: var(--blue-800); }
-  
-  .msg-meta { 
-    font-size: 10px; color: var(--text-tertiary); 
-    margin-top: 4px; display: flex; align-items: center; gap: 6px;
-  }
-  .quality-badge {
-    display: inline-flex; align-items: center; gap: 3px;
-    font-size: 9px; padding: 2px 5px; border-radius: 3px;
-    background: var(--teal-50); color: var(--teal-800);
-    border: 0.5px solid var(--teal-400);
-  }
-
-  .typing-indicator {
-    display: inline-flex; gap: 4px; padding: 8px 12px;
-  }
-  .typing-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--text-secondary);
-    animation: typing 1.4s ease-in-out infinite;
-  }
-  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes typing { 0%,60%,100%{opacity:0.3} 30%{opacity:1} }
-
-  /* Sidebar droite - Code review */
-  .code-review-panel {
-    width: 320px; border-left: 0.5px solid var(--border-tertiary);
-    background: var(--bg-secondary);
-    display: none; flex-direction: column;
-  }
-  .code-review-panel.active { display: flex; }
-  
-  .review-header {
-    padding: 12px 14px;
-    border-bottom: 0.5px solid var(--border-tertiary);
-    background: var(--bg-primary);
-  }
-  .review-title {
-    font-size: 13px; font-weight: 600; color: var(--text-primary);
-    display: flex; align-items: center; gap: 6px;
-  }
-  .review-content {
-    flex: 1; overflow-y: auto; padding: 12px;
-  }
-  .review-section {
-    margin-bottom: 16px;
-  }
-  .review-section-title {
-    font-size: 11px; font-weight: 600; color: var(--text-secondary);
-    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .review-item {
-    padding: 8px 10px; margin-bottom: 6px;
-    border-radius: 6px; border: 0.5px solid var(--border-tertiary);
-    background: var(--bg-primary); font-size: 12px;
-  }
-  .review-item.success { border-color: var(--teal-400); background: var(--teal-50); color: var(--teal-800); }
-  .review-item.warning { border-color: var(--amber-400); background: var(--amber-50); color: var(--amber-800); }
-  .review-item.error { border-color: var(--coral-400); background: var(--coral-50); color: var(--coral-800); }
-
-  /* Input area */
-  .chat-input-area {
-    border-top: 0.5px solid var(--border-tertiary);
-    padding: 12px 16px; background: var(--bg-primary);
-    display: flex; flex-direction: column; gap: 10px;
-  }
-  .quick-prompts { 
-    display: flex; gap: 6px; flex-wrap: wrap;
-    max-height: 80px; overflow-y: auto;
-  }
-  .qp-btn {
-    font-size: 11px; padding: 5px 12px; border-radius: 16px;
-    border: 0.5px solid var(--border-secondary);
-    background: var(--bg-secondary);
-    color: var(--text-secondary); cursor: pointer;
-    transition: all .15s; white-space: nowrap;
-  }
-  .qp-btn:hover { background: var(--blue-50); border-color: var(--blue-200); color: var(--blue-800); }
-  
-  .input-row { display: flex; gap: 8px; align-items: flex-end; }
-  .input-wrapper {
-    flex: 1; position: relative;
-  }
-  .chat-textarea {
-    width: 100%; padding: 10px 40px 10px 12px; font-size: 13px; resize: none;
-    min-height: 44px; max-height: 120px; border-radius: 10px;
-    border: 0.5px solid var(--border-secondary);
-    background: var(--bg-secondary); color: var(--text-primary);
-    font-family: inherit; line-height: 1.5;
-  }
-  .input-actions {
-    position: absolute; right: 8px; bottom: 8px;
-    display: flex; gap: 4px;
-  }
-  .input-icon-btn {
-    width: 26px; height: 26px; border-radius: 5px;
-    background: var(--bg-primary); border: 0.5px solid var(--border-tertiary);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 14px; color: var(--text-secondary);
-    transition: all .15s;
-  }
-  .input-icon-btn:hover { background: var(--blue-50); color: var(--blue-800); }
-  
-  .send-btn {
-    padding: 10px 18px; background: var(--blue-400); color: #fff;
-    border: none; border-radius: 10px; cursor: pointer;
-    font-size: 13px; font-weight: 600; transition: all .15s;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .send-btn:hover:not(:disabled) { background: var(--blue-800); }
-  .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  /* Snippets panel */
-  .snippets-grid { 
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-    gap: 12px; padding: 16px; overflow-y: auto;
-  }
-  .snippet-card {
-    border: 0.5px solid var(--border-tertiary);
-    border-radius: 10px; padding: 14px;
-    background: var(--bg-primary);
-    transition: all .15s; cursor: pointer;
-  }
-  .snippet-card:hover { 
-    border-color: var(--blue-400); 
-    box-shadow: 0 2px 8px rgba(55, 138, 221, 0.15);
-  }
-  .snippet-header {
-    display: flex; justify-content: space-between; align-items: start;
-    margin-bottom: 8px;
-  }
-  .snippet-title {
-    font-size: 13px; font-weight: 600; color: var(--text-primary);
-  }
-  .snippet-category {
-    font-size: 9px; padding: 2px 6px; border-radius: 4px;
-    background: var(--purple-50); color: var(--purple-800);
-    font-weight: 600;
-  }
-  .snippet-desc {
-    font-size: 11px; color: var(--text-secondary);
-    line-height: 1.5; margin-bottom: 8px;
-  }
-  .snippet-preview {
-    background: var(--bg-secondary);
-    border: 0.5px solid var(--border-tertiary);
-    border-radius: 6px; padding: 8px;
-    font-size: 10px; font-family: 'Courier New', monospace;
-    color: var(--text-secondary); max-height: 60px; overflow: hidden;
-  }
-
-  /* Config panel */
-  .config-container {
-    display: flex; gap: 0; flex: 1; overflow: hidden;
-  }
-  .config-sidebar {
-    width: 200px; border-right: 0.5px solid var(--border-tertiary);
-    background: var(--bg-secondary);
-    overflow-y: auto;
-  }
-  .config-content {
-    flex: 1; overflow-y: auto; padding: 20px;
-  }
-  
-  .config-section {
-    margin-bottom: 24px;
-  }
-  .config-section-title {
-    font-size: 15px; font-weight: 600; color: var(--text-primary);
-    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
-  }
-  .field-group {
-    margin-bottom: 14px;
-  }
-  .field-label {
-    font-size: 12px; font-weight: 600; color: var(--text-secondary);
-    margin-bottom: 6px; display: block;
-  }
-  .field-input, .field-select, .field-textarea {
-    width: 100%; padding: 8px 12px; font-size: 13px;
-    border-radius: 8px; border: 0.5px solid var(--border-secondary);
-    background: var(--bg-primary); color: var(--text-primary);
-    font-family: inherit;
-  }
-  .field-textarea {
-    resize: vertical; min-height: 80px;
-  }
-  .field-hint {
-    font-size: 11px; color: var(--text-tertiary);
-    margin-top: 4px; font-style: italic;
-  }
-  
-  .toggle-group {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 12px; border-radius: 8px;
-    border: 0.5px solid var(--border-tertiary);
-    background: var(--bg-primary); margin-bottom: 8px;
-  }
-  .toggle-label {
-    font-size: 13px; color: var(--text-primary);
-  }
-  .toggle-switch {
-    width: 44px; height: 24px; border-radius: 12px;
-    background: var(--gray-200); position: relative;
-    cursor: pointer; transition: background .2s;
-  }
-  .toggle-switch.active { background: var(--teal-400); }
-  .toggle-switch::after {
-    content: ''; width: 18px; height: 18px; border-radius: 50%;
-    background: white; position: absolute; top: 3px; left: 3px;
-    transition: left .2s;
-  }
-  .toggle-switch.active::after { left: 23px; }
-  
-  .btn-primary {
-    padding: 10px 20px; background: var(--blue-400); color: #fff;
-    border: none; border-radius: 8px; cursor: pointer;
-    font-size: 13px; font-weight: 600; transition: all .15s;
-    display: inline-flex; align-items: center; gap: 6px;
-  }
+  /* Chat Panel */
+  .chat-container { flex: 1; display: flex; flex-direction: column; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow: hidden; }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+  .message { max-width: 85%; padding: 12px 16px; border-radius: 12px; line-height: 1.5; position: relative; animation: fadeIn 0.3s; }
+  .message.user { align-self: flex-end; background: var(--blue-400); color: white; border-bottom-right-radius: 2px; }
+  .message.assistant { align-self: flex-start; background: var(--gray-100); color: var(--gray-800); border-bottom-left-radius: 2px; }
+  .message.system { align-self: center; background: var(--warning); color: var(--gray-800); font-size: 13px; padding: 8px 12px; border-radius: 20px; }
+  .chat-input-area { padding: 15px; border-top: 1px solid var(--gray-200); background: var(--gray-50); display: flex; gap: 10px; }
+  .chat-input { flex: 1; padding: 12px; border: 1px solid var(--gray-200); border-radius: 8px; resize: none; outline: none; font-size: 14px; }
+  .chat-input:focus { border-color: var(--blue-400); box-shadow: 0 0 0 2px var(--blue-50); }
+  .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+  .btn-primary { background: var(--blue-400); color: white; }
   .btn-primary:hover { background: var(--blue-800); }
+  .btn-secondary { background: white; border: 1px solid var(--gray-200); color: var(--gray-600); }
+  .btn-secondary:hover { background: var(--gray-100); }
+  .btn-icon { padding: 8px; border-radius: 6px; }
   
-  .btn-secondary {
-    padding: 10px 20px; background: var(--bg-secondary); 
-    color: var(--text-primary);
-    border: 0.5px solid var(--border-secondary); border-radius: 8px;
-    cursor: pointer; font-size: 13px; font-weight: 600;
-    transition: all .15s; display: inline-flex; align-items: center; gap: 6px;
-  }
-  .btn-secondary:hover { background: var(--bg-tertiary); }
+  /* Code Blocks */
+  pre { background: #282c34; color: #abb2bf; padding: 15px; border-radius: 6px; overflow-x: auto; margin: 10px 0; font-family: 'Consolas', monospace; font-size: 13px; }
+  code { font-family: 'Consolas', monospace; }
+  .message.assistant pre { background: #1e2127; }
+  .copy-btn { float: right; font-size: 12px; padding: 4px 8px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 4px; cursor: pointer; }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); }
 
-  .alert {
-    padding: 12px 14px; border-radius: 8px; font-size: 12px;
-    margin-bottom: 16px; border: 0.5px solid;
-    display: flex; align-items: start; gap: 10px;
-  }
-  .alert.success { background: var(--teal-50); color: var(--teal-800); border-color: var(--teal-400); }
-  .alert.error { background: var(--coral-50); color: var(--coral-800); border-color: var(--coral-400); }
-  .alert.info { background: var(--amber-50); color: var(--amber-800); border-color: var(--amber-400); }
-  .alert i { font-size: 16px; }
+  /* Feature Panels (Library, Validator, etc.) */
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 20px; overflow-y: auto; }
+  .feature-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s; border: 1px solid var(--gray-200); }
+  .feature-card:hover { transform: translateY(-3px); border-color: var(--blue-400); }
+  .feature-card i { font-size: 32px; color: var(--blue-400); margin-bottom: 15px; }
+  .feature-card h3 { font-size: 16px; margin-bottom: 8px; }
+  .feature-card p { font-size: 13px; color: var(--gray-600); line-height: 1.4; }
+  
+  .tool-panel { display: flex; flex-direction: column; height: 100%; }
+  .tool-header { padding: 15px; background: white; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center; }
+  .tool-body { flex: 1; display: flex; overflow: hidden; }
+  .tool-editor { flex: 1; padding: 15px; display: flex; flex-direction: column; border-right: 1px solid var(--gray-200); }
+  .tool-results { flex: 1; padding: 15px; background: var(--gray-50); overflow-y: auto; }
+  textarea.code-editor { flex: 1; width: 100%; padding: 15px; border: 1px solid var(--gray-200); border-radius: 6px; font-family: 'Consolas', monospace; font-size: 13px; resize: none; outline: none; margin-bottom: 15px; }
+  textarea.code-editor:focus { border-color: var(--blue-400); }
+  
+  .result-item { background: white; padding: 15px; border-radius: 6px; margin-bottom: 10px; border-left: 4px solid var(--gray-400); }
+  .result-item.error { border-left-color: var(--danger); }
+  .result-item.warning { border-left-color: var(--warning); }
+  .result-item.success { border-left-color: var(--success); }
+  .result-item.info { border-left-color: var(--blue-400); }
+  .result-title { font-weight: 600; margin-bottom: 5px; display: flex; justify-content: space-between; }
+  .result-score { font-size: 24px; font-weight: bold; color: var(--blue-400); text-align: center; margin: 20px 0; }
 
-  /* Modal */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.5); z-index: 1000;
-    align-items: center; justify-content: center;
-  }
-  .modal-overlay.active { display: flex; }
-  .modal {
-    background: var(--bg-primary); border-radius: 12px;
-    max-width: 600px; width: 90%; max-height: 80vh;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-    display: flex; flex-direction: column;
-  }
-  .modal-header {
-    padding: 16px 20px; border-bottom: 0.5px solid var(--border-tertiary);
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .modal-title {
-    font-size: 16px; font-weight: 600; color: var(--text-primary);
-  }
-  .modal-close {
-    width: 28px; height: 28px; border-radius: 6px;
-    background: var(--bg-secondary); border: none;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    color: var(--text-secondary); font-size: 18px;
-  }
-  .modal-close:hover { background: var(--bg-tertiary); }
-  .modal-body {
-    padding: 20px; overflow-y: auto; flex: 1;
-  }
-  .modal-footer {
-    padding: 16px 20px; border-top: 0.5px solid var(--border-tertiary);
-    display: flex; justify-content: flex-end; gap: 10px;
-  }
+  /* Config Modal */
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+  .modal { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+  .modal h2 { margin-bottom: 20px; color: var(--gray-800); }
+  .form-group { margin-bottom: 15px; }
+  .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--gray-600); }
+  .form-control { width: 100%; padding: 10px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 14px; }
+  .range-container { display: flex; align-items: center; gap: 15px; }
+  .range-container input { flex: 1; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
 
-  /* Export options */
-  .export-options {
-    display: grid; grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-  .export-option {
-    padding: 14px; border-radius: 8px;
-    border: 0.5px solid var(--border-tertiary);
-    background: var(--bg-primary); cursor: pointer;
-    transition: all .15s;
-  }
-  .export-option:hover {
-    border-color: var(--blue-400);
-    background: var(--blue-50);
-  }
-  .export-option-title {
-    font-size: 13px; font-weight: 600; color: var(--text-primary);
-    margin-bottom: 4px; display: flex; align-items: center; gap: 6px;
-  }
-  .export-option-desc {
-    font-size: 11px; color: var(--text-secondary);
-  }
+  /* Toast */
+  .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+  .toast { padding: 12px 20px; border-radius: 8px; color: white; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.3s; display: flex; align-items: center; gap: 10px; }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+  .toast.info { background: var(--blue-400); }
 
-  /* Projects list */
-  .projects-list {
-    padding: 16px; overflow-y: auto;
-  }
-  .project-item {
-    padding: 12px; border-radius: 8px;
-    border: 0.5px solid var(--border-tertiary);
-    background: var(--bg-primary); margin-bottom: 10px;
-    cursor: pointer; transition: all .15s;
-  }
-  .project-item:hover {
-    border-color: var(--blue-400);
-    box-shadow: 0 2px 8px rgba(55, 138, 221, 0.15);
-  }
-  .project-item.active {
-    border-color: var(--blue-400);
-    background: var(--blue-50);
-  }
-  .project-name {
-    font-size: 13px; font-weight: 600; color: var(--text-primary);
-    margin-bottom: 4px;
-  }
-  .project-meta {
-    font-size: 11px; color: var(--text-secondary);
-    display: flex; gap: 12px;
-  }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: var(--bg-secondary); }
-  ::-webkit-scrollbar-thumb { background: var(--border-secondary); border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--border-primary); }
-
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  
   /* Responsive */
   @media (max-width: 768px) {
-    .sidebar { width: 60px; min-width: 60px; }
-    .sidebar-section, .project-selector { display: none; }
-    .sidebar-item span { display: none; }
-    .code-review-panel { width: 100%; position: absolute; inset: 0; z-index: 100; }
+    .sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .tool-body { flex-direction: column; }
+    .tool-editor { border-right: none; border-bottom: 1px solid var(--gray-200); height: 50%; }
   }
-
-  /* Nouvelles fonctionnalités - Bibliothèque SCL */
-  .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-    padding: 16px;
-  }
-  .feature-card {
-    background: var(--bg-primary);
-    border: 0.5px solid var(--border-tertiary);
-    border-radius: 8px;
-    padding: 16px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .feature-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border-color: var(--blue-400);
-  }
-  .feature-icon {
-    width: 48px; height: 48px;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
-    margin-bottom: 12px;
-  }
-  .feature-icon.pumps { background: var(--blue-50); color: var(--blue-400); }
-  .feature-icon.regulation { background: var(--teal-50); color: var(--teal-400); }
-  .feature-icon.safety { background: var(--coral-50); color: var(--coral-400); }
-  .feature-icon.motors { background: var(--amber-50); color: var(--amber-400); }
-  .feature-icon.hvac { background: var(--purple-50); color: var(--purple-400); }
-  .feature-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-  .feature-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
-  .snippet-count { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; }
-
-  /* Validateur & Optimiseur */
-  .analysis-panel {
-    background: var(--bg-primary);
-    border: 0.5px solid var(--border-tertiary);
-    border-radius: 8px;
-    padding: 16px;
-    margin: 16px;
-  }
-  .analysis-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 12px;
-  }
-  .analysis-score {
-    font-size: 24px; font-weight: 700;
-    padding: 8px 16px;
-    border-radius: 8px;
-  }
-  .score-good { background: var(--teal-50); color: var(--teal-800); }
-  .score-warning { background: var(--amber-50); color: var(--amber-800); }
-  .score-bad { background: var(--coral-50); color: var(--coral-800); }
-  .issue-list { list-style: none; }
-  .issue-item {
-    padding: 8px 12px;
-    margin: 4px 0;
-    border-radius: 6px;
-    font-size: 13px;
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .issue-error { background: var(--coral-50); color: var(--coral-800); }
-  .issue-warning { background: var(--amber-50); color: var(--amber-800); }
-  .issue-info { background: var(--blue-50); color: var(--blue-800); }
-  .issue-icon { font-size: 16px; flex-shrink: 0; }
-
-  /* Documentation */
-  .doc-panel {
-    background: var(--bg-primary);
-    border: 0.5px solid var(--border-tertiary);
-    border-radius: 8px;
-    padding: 20px;
-    margin: 16px;
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 13px;
-    line-height: 1.6;
-  }
-  .doc-section { margin-bottom: 16px; }
-  .doc-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--blue-400); }
-  .doc-var-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-  }
-  .doc-var-table th, .doc-var-table td {
-    padding: 6px 8px;
-    text-align: left;
-    border-bottom: 0.5px solid var(--border-tertiary);
-  }
-  .doc-var-table th { background: var(--bg-tertiary); font-weight: 600; }
-  .var-input { color: var(--teal-800); }
-  .var-output { color: var(--blue-800); }
-  .var-inout { color: var(--purple-800); }
-  .var-local { color: var(--gray-600); }
-
-  /* Onglets pour les nouvelles fonctionnalités */
-  .tab-container {
-    display: flex;
-    border-bottom: 0.5px solid var(--border-tertiary);
-    background: var(--bg-secondary);
-    padding: 8px 16px 0;
-    gap: 4px;
-  }
-  .tab-btn {
-    padding: 8px 16px;
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    border-radius: 6px 6px 0 0;
-    transition: all 0.2s;
-  }
-  .tab-btn:hover { background: var(--bg-tertiary); }
-  .tab-btn.active {
-    background: var(--bg-primary);
-    color: var(--blue-400);
-    border: 0.5px solid var(--border-tertiary);
-    border-bottom: none;
-  }
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
 </style>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 </head>
 <body>
 
-<div id="app">
-  <!-- Topbar -->
-  <div class="topbar">
-    <div class="logo-badge">SCL PRO</div>
-    <div class="agent-title">SuperAgent TIA Portal</div>
-    <div class="agent-sub">Multi-modèles · Export XML · Code Review</div>
-    
-    <div class="topbar-actions">
-      <div class="status-indicator" id="statusIndicator">
-        <span class="status-dot"></span>
-        <span id="statusText">Prêt</span>
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <i class="ti ti-robot"></i>
+    <h1>SCL SuperAgent Pro</h1>
+  </div>
+  <nav class="nav-menu">
+    <a class="nav-item active" onclick="switchPanel('chat')"><i class="ti ti-message"></i> Chat IA</a>
+    <a class="nav-item" onclick="switchPanel('library')"><i class="ti ti-books"></i> Bibliothèque SCL</a>
+    <a class="nav-item" onclick="switchPanel('validator')"><i class="ti ti-shield-check"></i> Validateur SCL</a>
+    <a class="nav-item" onclick="switchPanel('optimizer')"><i class="ti ti-zap"></i> Optimiseur Code</a>
+    <a class="nav-item" onclick="switchPanel('documentation')"><i class="ti ti-file-text"></i> Documentation</a>
+    <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 0;"></div>
+    <a class="nav-item" onclick="openConfig()"><i class="ti ti-settings"></i> Configuration</a>
+    <a class="nav-item" onclick="testAllModules()"><i class="ti ti-test"></i> Tester Modules</a>
+  </nav>
+  <div class="sidebar-footer">
+    v2.1.0 • Localhost Mode<br>
+    &copy; 2024 SCL Tools
+  </div>
+</aside>
+
+<!-- Main Content -->
+<main class="main-content">
+  <header class="top-bar">
+    <div class="top-bar-title">
+      <button class="btn btn-icon btn-secondary" onclick="toggleSidebar()" style="display:none;" id="menuToggle"><i class="ti ti-menu"></i></button>
+      <span id="pageTitle">Chat IA</span>
+    </div>
+    <div class="top-bar-actions">
+      <button class="btn btn-secondary" onclick="exportConversation()"><i class="ti ti-download"></i> Export</button>
+      <button class="btn btn-secondary" onclick="clearConversation()"><i class="ti ti-trash"></i> Effacer</button>
+    </div>
+  </header>
+
+  <!-- Chat Panel -->
+  <div id="chat" class="panel active">
+    <div class="chat-container">
+      <div class="chat-messages" id="chatMessages">
+        <div class="message assistant">
+          Bonjour ! Je suis votre assistant SCL pour TIA Portal. Comment puis-je vous aider aujourd'hui ?
+        </div>
       </div>
-      <button class="icon-btn" onclick="toggleReviewPanel()" title="Code Review" id="reviewToggle">
-        <i class="ti ti-file-analytics"></i>
-      </button>
-      <button class="icon-btn" onclick="openExportModal()" title="Exporter">
-        <i class="ti ti-download"></i>
-      </button>
-      <button class="icon-btn" onclick="openShareModal()" title="Partager">
-        <i class="ti ti-share"></i>
-      </button>
-      <button class="icon-btn" onclick="toggleFullscreen()" title="Plein écran" id="fullscreenBtn">
-        <i class="ti ti-arrows-maximize"></i>
-      </button>
+      <div class="chat-input-area">
+        <textarea class="chat-input" id="userInput" rows="1" placeholder="Décrivez votre bloc SCL ou posez une question..." onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendMessage();}"></textarea>
+        <button class="btn btn-primary" onclick="sendMessage()"><i class="ti ti-send"></i> Envoyer</button>
+      </div>
     </div>
   </div>
 
-  <div class="layout">
-    <!-- Sidebar gauche -->
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <select class="project-selector" id="projectSelector" onchange="switchProject()">
-          <option value="default">Station AEP Secteur Nord</option>
-          <option value="projet2">Relevage EU Zone Industrielle</option>
-          <option value="projet3">Surpression Immeuble R+12</option>
-        </select>
-      </div>
-      
-      <div class="sidebar-section">Navigation</div>
-      <div class="sidebar-item active" onclick="switchPanel('chat')">
-        <i class="ti ti-message-dots"></i>
-        <span>Chat IA</span>
-      </div>
-      <div class="sidebar-item" onclick="switchPanel('snippets')">
-        <i class="ti ti-code"></i>
-        <span>Bibliothèque</span>
-        <span class="badge">47</span>
-      </div>
-      <div class="sidebar-item" onclick="showFeaturePanel('library')">
-        <i class="ti ti-library"></i>
-        <span>Bibliothèque Étendue</span>
-        <span class="badge">NEW</span>
-      </div>
-      <div class="sidebar-item" onclick="switchPanel('projects')">
-        <i class="ti ti-folder"></i>
-        <span>Projets</span>
-      </div>
-      <div class="sidebar-item" onclick="switchPanel('history')">
-        <i class="ti ti-history"></i>
-        <span>Historique</span>
-      </div>
-      
-      <div class="sidebar-section">Outils</div>
-      <div class="sidebar-item" onclick="showFeaturePanel('validator')">
-        <i class="ti ti-check"></i>
-        <span>Validateur SCL</span>
-        <span class="badge">NEW</span>
-      </div>
-      <div class="sidebar-item" onclick="showFeaturePanel('optimizer')">
-        <i class="ti ti-rocket"></i>
-        <span>Optimiseur</span>
-        <span class="badge">NEW</span>
-      </div>
-      <div class="sidebar-item" onclick="showFeaturePanel('documentation')">
-        <i class="ti ti-book"></i>
-        <span>Documentation</span>
-        <span class="badge">NEW</span>
-      </div>
-      
-      <div class="sidebar-section">Configuration</div>
-      <div class="sidebar-item" onclick="switchPanel('config')">
-        <i class="ti ti-settings"></i>
-        <span>Paramètres</span>
-      </div>
+  <!-- Library Panel -->
+  <div id="library" class="panel">
+    <div class="tool-header">
+      <h2>Bibliothèque de Snippets SCL</h2>
     </div>
-
-    <!-- Main content -->
-    <div class="main">
-      <!-- Chat Panel -->
-      <div class="panel active" id="chat-panel">
-        <div class="chat-container">
-          <div class="chat-main">
-            <div class="chat-messages" id="messages"></div>
-            
-            <div class="chat-input-area">
-              <div class="quick-prompts" id="quickPrompts">
-                <button class="qp-btn" onclick="useQuickPrompt('Crée un PID pour régulation de pression avec anti-windup')">🎯 PID pression</button>
-                <button class="qp-btn" onclick="useQuickPrompt('Génère un système d\'alternance pour 3 pompes avec heures de marche')">🔄 Alternance pompes</button>
-                <button class="qp-btn" onclick="useQuickPrompt('Crée un bloc de gestion des alarmes avec acquittement')">🔔 Gestion alarmes</button>
-                <button class="qp-btn" onclick="useQuickPrompt('Génère le Data Block global de la station')">💾 DB Station</button>
-                <button class="qp-btn" onclick="useQuickPrompt('Crée une protection anti-marche à sec avec capteurs')">🛡️ Protection</button>
-                <button class="qp-btn" onclick="useQuickPrompt('Optimise ce code SCL pour réduire le temps de cycle')">⚡ Optimiser</button>
-              </div>
-              
-              <div class="input-row">
-                <div class="input-wrapper">
-                  <textarea 
-                    class="chat-textarea" 
-                    id="userInput" 
-                    rows="1"
-                    placeholder="Décrivez votre besoin SCL ou collez du code à analyser..."
-                    onkeydown="handleKeyPress(event)"
-                    oninput="autoResize(this)"
-                  ></textarea>
-                  <div class="input-actions">
-                    <button class="input-icon-btn" onclick="attachFile()" title="Joindre fichier">
-                      <i class="ti ti-paperclip"></i>
-                    </button>
-                    <button class="input-icon-btn" onclick="toggleVoice()" title="Entrée vocale">
-                      <i class="ti ti-microphone"></i>
-                    </button>
-                  </div>
-                </div>
-                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-                  <i class="ti ti-send"></i>
-                  Envoyer
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Code Review Panel -->
-          <div class="code-review-panel" id="reviewPanel">
-            <div class="review-header">
-              <div class="review-title">
-                <i class="ti ti-file-analytics"></i>
-                Analyse de code
-              </div>
-            </div>
-            <div class="review-content" id="reviewContent">
-              <div class="alert info">
-                <i class="ti ti-info-circle"></i>
-                <div>Générez du code SCL pour voir l'analyse automatique de qualité.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Snippets Panel -->
-      <div class="panel" id="snippets-panel">
-        <div class="snippets-grid" id="snippetsGrid">
-          <!-- Les snippets seront générés dynamiquement -->
-        </div>
-      </div>
-
-      <!-- Projects Panel -->
-      <div class="panel" id="projects-panel">
-        <div class="projects-list" id="projectsList">
-          <!-- Les projets seront générés dynamiquement -->
-        </div>
-      </div>
-
-      <!-- Config Panel -->
-      <div class="panel" id="config-panel">
-
-    <!-- Panels pour les nouvelles fonctionnalités -->
-    <div class="panel" id="library-panel">
-      <div class="tab-container">
-        <button class="tab-btn active" onclick="switchTab('library', 'categories')">Catégories</button>
-        <button class="tab-btn" onclick="switchTab('library', 'snippets')">Snippets</button>
-        <button class="tab-btn" onclick="switchTab('library', 'favorites')">Favoris</button>
-      </div>
-      <div class="tab-content active" id="library-categories-tab">
-        <div class="feature-grid" id="libraryCategories"></div>
-      </div>
-      <div class="tab-content" id="library-snippets-tab">
-        <div class="feature-grid" id="librarySnippets"></div>
-      </div>
-      <div class="tab-content" id="library-favorites-tab">
-        <div class="feature-grid" id="libraryFavorites"></div>
-      </div>
+    <div class="feature-grid" id="libraryGrid">
+      <!-- Rempli par JS -->
     </div>
+  </div>
 
-    <div class="panel" id="validator-panel">
-      <div class="analysis-panel">
-        <div class="analysis-header">
-          <div>
-            <div class="doc-title"><i class="ti ti-check"></i> Validateur SCL Avancé</div>
-            <div style="font-size:12px;color:var(--text-secondary)">Analyse statique de code SCL avec 15 règles de validation</div>
-          </div>
-          <button class="send-btn" onclick="runValidator()">
-            <i class="ti ti-play"></i> Analyser
-          </button>
-        </div>
-        <textarea class="chat-textarea" id="validatorCode" rows="8" placeholder="Collez votre code SCL ici pour analyse..." style="font-family:'Consolas','Monaco',monospace;font-size:13px;"></textarea>
-        <div id="validatorResults" style="margin-top:16px;"></div>
+  <!-- Validator Panel -->
+  <div id="validator" class="panel">
+    <div class="tool-panel">
+      <div class="tool-header">
+        <h2>Validateur SCL Avancé</h2>
+        <button class="btn btn-primary" onclick="runStandaloneValidator()"><i class="ti ti-check"></i> Analyser</button>
       </div>
-    </div>
-
-    <div class="panel" id="optimizer-panel">
-      <div class="analysis-panel">
-        <div class="analysis-header">
-          <div>
-            <div class="doc-title"><i class="ti ti-rocket"></i> Optimiseur de Code SCL</div>
-            <div style="font-size:12px;color:var(--text-secondary)">Détection des optimisations possibles et suggestions d'amélioration</div>
-          </div>
-          <button class="send-btn" onclick="runOptimizer()">
-            <i class="ti ti-play"></i> Optimiser
-          </button>
+      <div class="tool-body">
+        <div class="tool-editor">
+          <textarea class="code-editor" id="validatorInput" placeholder="Collez votre code SCL ici pour analyse..."></textarea>
         </div>
-        <textarea class="chat-textarea" id="optimizerCode" rows="8" placeholder="Collez votre code SCL ici pour optimisation..." style="font-family:'Consolas','Monaco',monospace;font-size:13px;"></textarea>
-        <div id="optimizerResults" style="margin-top:16px;"></div>
-      </div>
-    </div>
-
-    <div class="panel" id="documentation-panel">
-      <div class="analysis-panel">
-        <div class="analysis-header">
-          <div>
-            <div class="doc-title"><i class="ti ti-book"></i> Générateur de Documentation</div>
-            <div style="font-size:12px;color:var(--text-secondary)">Génération automatique de documentation technique à partir du code SCL</div>
-          </div>
-          <button class="send-btn" onclick="generateDocumentation()">
-            <i class="ti ti-file-text"></i> Générer
-          </button>
-        </div>
-        <textarea class="chat-textarea" id="docCode" rows="8" placeholder="Collez votre code SCL ici pour générer la documentation..." style="font-family:'Consolas','Monaco',monospace;font-size:13px;"></textarea>
-        <div id="documentationResults" style="margin-top:16px;"></div>
-      </div>
-    </div>
-        <div class="config-container">
-          <div class="config-sidebar">
-            <div class="sidebar-section">Paramètres</div>
-            <div class="sidebar-item active" onclick="showConfigSection('api')">
-              <i class="ti ti-plug"></i>
-              <span>API & Modèles</span>
-            </div>
-            <div class="sidebar-item" onclick="showConfigSection('context')">
-              <i class="ti ti-cpu"></i>
-              <span>Contexte automate</span>
-            </div>
-            <div class="sidebar-item" onclick="showConfigSection('features')">
-              <i class="ti ti-sparkles"></i>
-              <span>Fonctionnalités</span>
-            </div>
-            <div class="sidebar-item" onclick="showConfigSection('export')">
-              <i class="ti ti-file-export"></i>
-              <span>Export & Plugins</span>
-            </div>
-            <div class="sidebar-item" onclick="showConfigSection('advanced')">
-              <i class="ti ti-adjustments"></i>
-              <span>Avancé</span>
-            </div>
-          </div>
-          
-          <div class="config-content" id="configContent">
-            <!-- Le contenu sera généré dynamiquement -->
-          </div>
+        <div class="tool-results" id="validatorResults">
+          <div style="text-align:center; color:var(--gray-600); margin-top:50px;">En attente d'analyse...</div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Modal Export -->
-<div class="modal-overlay" id="exportModal">
+  <!-- Optimizer Panel -->
+  <div id="optimizer" class="panel">
+    <div class="tool-panel">
+      <div class="tool-header">
+        <h2>Optimiseur de Code</h2>
+        <button class="btn btn-primary" onclick="runStandaloneOptimizer()"><i class="ti ti-wand"></i> Optimiser</button>
+      </div>
+      <div class="tool-body">
+        <div class="tool-editor">
+          <textarea class="code-editor" id="optimizerInput" placeholder="Collez votre code SCL à optimiser..."></textarea>
+        </div>
+        <div class="tool-results" id="optimizerResults">
+          <div style="text-align:center; color:var(--gray-600); margin-top:50px;">En attente d'optimisation...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Documentation Panel -->
+  <div id="documentation" class="panel">
+    <div class="tool-panel">
+      <div class="tool-header">
+        <h2>Générateur de Documentation</h2>
+        <button class="btn btn-primary" onclick="runStandaloneDocGenerator()"><i class="ti ti-file-plus"></i> Générer</button>
+      </div>
+      <div class="tool-body">
+        <div class="tool-editor">
+          <textarea class="code-editor" id="docInput" placeholder="Collez un bloc SCL pour générer sa documentation..."></textarea>
+        </div>
+        <div class="tool-results" id="docResults">
+          <div style="text-align:center; color:var(--gray-600); margin-top:50px;">En attente de génération...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Config Modal -->
+<div class="modal-overlay" id="configModal">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Exporter le code SCL</div>
-      <button class="modal-close" onclick="closeModal('exportModal')">
-        <i class="ti ti-x"></i>
-      </button>
+    <h2><i class="ti ti-settings"></i> Configuration</h2>
+    <div class="form-group">
+      <label>Clé API Mistral</label>
+      <input type="password" id="apiKeyInput" class="form-control" placeholder="sk-...">
     </div>
-    <div class="modal-body">
-      <div class="export-options">
-        <div class="export-option" onclick="exportAs('scl')">
-          <div class="export-option-title">
-            <i class="ti ti-file-code"></i>
-            Fichier SCL
-          </div>
-          <div class="export-option-desc">Code source pur (.scl)</div>
-        </div>
-        <div class="export-option" onclick="exportAs('xml')">
-          <div class="export-option-title">
-            <i class="ti ti-file-code-2"></i>
-            XML TIA Portal
-          </div>
-          <div class="export-option-desc">Format d'import TIA (.xml)</div>
-        </div>
-        <div class="export-option" onclick="exportAs('pdf')">
-          <div class="export-option-title">
-            <i class="ti ti-file-description"></i>
-            Documentation PDF
-          </div>
-          <div class="export-option-desc">Avec commentaires et schémas</div>
-        </div>
-        <div class="export-option" onclick="exportAs('project')">
-          <div class="export-option-title">
-            <i class="ti ti-folder-zip"></i>
-            Projet complet
-          </div>
-          <div class="export-option-desc">Tous les blocs + DB (.zip)</div>
-        </div>
+    <div class="form-group">
+      <label for="maxTokensSlider">Limite de Tokens (Max Generation): <span id="maxTokensValue" style="color:var(--blue-400); font-weight:bold;">4096</span></label>
+      <div class="range-container">
+        <span style="font-size:12px">512</span>
+        <input type="range" id="maxTokensSlider" min="512" max="8192" step="256" value="4096">
+        <span style="font-size:12px">8192</span>
       </div>
+      <small style="color:var(--gray-600); display:block; margin-top:5px;">Augmentez cette valeur pour les réponses longues. Attention au temps de réponse.</small>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeConfig()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveConfig()">Sauvegarder</button>
     </div>
   </div>
 </div>
 
-<!-- Modal Share -->
-<div class="modal-overlay" id="shareModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Partager la conversation</div>
-      <button class="modal-close" onclick="closeModal('shareModal')">
-        <i class="ti ti-x"></i>
-      </button>
-    </div>
-    <div class="modal-body">
-      <div class="field-group">
-        <label class="field-label">Lien de partage</label>
-        <div style="display: flex; gap: 8px;">
-          <input type="text" class="field-input" id="shareLink" readonly value="https://scl-agent.app/share/abc123xyz">
-          <button class="btn-secondary" onclick="copyShareLink()">
-            <i class="ti ti-copy"></i>
-            Copier
-          </button>
-        </div>
-        <div class="field-hint">Ce lien permet de visualiser la conversation en lecture seule</div>
-      </div>
-      
-      <div class="field-group" style="margin-top: 16px;">
-        <label class="field-label">Options de partage</label>
-        <div class="toggle-group">
-          <span class="toggle-label">Autoriser les commentaires</span>
-          <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
-        </div>
-        <div class="toggle-group">
-          <span class="toggle-label">Activer le code review collaboratif</span>
-          <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('shareModal')">Fermer</button>
-      <button class="btn-primary" onclick="shareToGallery()">
-        <i class="ti ti-upload"></i>
-        Publier dans la galerie
-      </button>
-    </div>
-  </div>
-</div>
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
 
 <script>
-// ========== CONFIGURATION GLOBALE ==========
-let config = {
-  apiKey: localStorage.getItem('mistral_api_key') || '',
-  model: localStorage.getItem('mistral_model') || 'mistral-small-latest',
-  maxTokens: parseInt(localStorage.getItem('mistral_max_tokens')) || 4096,
-  cpuFamily: localStorage.getItem('cpu_family') || 'S7-1200',
-  tiaVersion: localStorage.getItem('tia_version') || 'TIA Portal V18',
-  stationType: localStorage.getItem('station_type') || 'AEP',
-  
-  // Fonctionnalités avancées
-  enableStreaming: localStorage.getItem('enable_streaming') === 'true',
-  enableValidation: localStorage.getItem('enable_validation') !== 'false',
-  enableOptimization: localStorage.getItem('enable_optimization') === 'true',
-  enableAutoDoc: localStorage.getItem('enable_autodoc') === 'true',
-  enableCache: localStorage.getItem('enable_cache') !== 'false',
-  
-  // Multi-modèles
-  models: {
-    primary: 'mistral-small-latest',
-    validation: 'mistral-small-latest',
-    optimization: 'mistral-small-latest'
-  }
+/**
+ * SCL SUPERAGENT PRO - CORE LOGIC
+ * Version 2.1.0 (Corrected & Optimized)
+ */
+
+// --- Global State ---
+const state = {
+  currentPanel: 'chat',
+  isGenerating: false,
+  conversationHistory: []
 };
 
-let conversationHistory = [];
-let currentProject = 'default';
-let codeCache = new Map();
-let snippetsLibrary = [];
+// --- Configuration ---
+let config = {
+  apiKey: localStorage.getItem('mistral_api_key') || '',
+  maxTokens: parseInt(localStorage.getItem('mistral_max_tokens')) || 4096
+};
 
-// ========== SYSTEM PROMPTS ==========
-const getSystemPrompt = () => `Tu es un expert SCL (Structured Control Language) pour automates Siemens, spécialisé dans les stations de pompage.
-
-CONTEXTE ACTUEL :
-- CPU: ${config.cpuFamily}
-- TIA Portal: ${config.tiaVersion}
-- Application: ${config.stationType}
-
-COMPÉTENCES PRINCIPALES :
-✓ Génération de code SCL conforme IEC 61131-3
-✓ Blocs FB/FC/DB optimisés pour pompage
-✓ Régulation PID (PID_Compact) pour pression/débit
-✓ Gestion de groupes de pompes avec alternance
-✓ Protection moteur et alarmes process
-✓ Communication Modbus TCP / OPC UA
-✓ Optimisation temps de cycle et mémoire
-
-RÈGLES DE GÉNÉRATION :
-1. Code syntaxiquement correct pour TIA Portal
-2. Variables typées explicitement (BOOL, REAL, INT, TIME, etc.)
-3. Commentaires en français, clairs et concis
-4. Gestion complète des erreurs et états de sécurité
-5. Respect des bonnes pratiques hydrauliques
-6. Code maintenable et documenté
-7. Validation des plages de valeurs
-8. Protection contre les divisions par zéro
-
-FORMAT DE RÉPONSE :
-- Explication brève du bloc (2-3 phrases)
-- Code SCL complet avec structure FUNCTION/FUNCTION_BLOCK
-- Suggestions d'amélioration ou variations si pertinent
-
-${config.enableOptimization ? 'OPTIMISATION ACTIVÉE : Privilégie la performance et la réduction du temps de cycle.' : ''}
-${config.enableAutoDoc ? 'DOCUMENTATION AUTO : Génère des commentaires détaillés pour chaque section.' : ''}
-
-Réponds en français avec du code prêt pour TIA Portal.`;
-
-const VALIDATION_PROMPT = `Analyse ce code SCL et identifie :
-1. Erreurs de syntaxe
-2. Problèmes de typage
-3. Conditions non gérées
-4. Risques de débordement
-5. Optimisations possibles
-6. Conformité IEC 61131-3
-
-Format de réponse : JSON avec {errors: [], warnings: [], suggestions: [], score: 0-100}`;
-
-// ========== INITIALISATION ==========
+// --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-  initializeApp();
-  loadProjects();
-  loadSnippets();
-  addWelcomeMessage();
-  updateStatus('ready');
+  console.log("🚀 SCL SuperAgent Pro Initialisé");
   
-  // Initialiser la bibliothèque au chargement
+  // Load Config UI
+  document.getElementById('apiKeyInput').value = config.apiKey;
+  const slider = document.getElementById('maxTokensSlider');
+  const display = document.getElementById('maxTokensValue');
+  
+  if(slider && display) {
+    slider.value = config.maxTokens;
+    display.textContent = config.maxTokens;
+    
+    // FIX 1: Sauvegarde automatique + Feedback immédiat
+    slider.addEventListener('input', function() {
+      const val = parseInt(this.value);
+      display.textContent = val;
+      config.maxTokens = val;
+      localStorage.setItem('mistral_max_tokens', val.toString());
+      // Petit toast discret
+      showToast(`Tokens: ${val}`, 'info');
+    });
+  }
+
+  // Initialize Library
   try {
     renderLibraryCategories();
+    console.log("✅ Bibliothèque initialisée");
   } catch (e) {
-    console.error('Erreur initialisation bibliothèque:', e);
+    console.error("❌ Erreur init bibliothèque:", e);
+  }
+
+  // Mobile menu check
+  if(window.innerWidth <= 768) {
+    document.getElementById('menuToggle').style.display = 'block';
   }
 });
 
-function initializeApp() {
-  // Charger la config
-  if (config.apiKey) {
-    updateStatus('connected');
+// --- Core Functions ---
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function switchPanel(panelId) {
+  state.currentPanel = panelId;
+  
+  // Update Nav
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const activeNav = document.querySelector(`.nav-item[onclick="switchPanel('${panelId}')"]`);
+  if(activeNav) activeNav.classList.add('active');
+  
+  // Update Panels
+  document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  
+  // Update Title
+  const titles = {
+    'chat': 'Chat IA',
+    'library': 'Bibliothèque SCL',
+    'validator': 'Validateur SCL',
+    'optimizer': 'Optimiseur Code',
+    'documentation': 'Documentation'
+  };
+  document.getElementById('pageTitle').textContent = titles[panelId] || 'SCL Pro';
+  
+  // Close mobile sidebar if open
+  if(window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.remove('open');
+  }
+}
+
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  let icon = 'ti-info-circle';
+  if(type === 'success') icon = 'ti-check';
+  if(type === 'error') icon = 'ti-alert-circle';
+  
+  toast.innerHTML = `<i class="ti ${icon}"></i> <span>${message}</span>`;
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// --- Chat & API Logic ---
+
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const message = input.value.trim();
+  
+  if(!message || state.isGenerating) return;
+  if(!config.apiKey) {
+    showToast('Veuillez configurer votre clé API dans les paramètres', 'error');
+    openConfig();
+    return;
   }
   
-  // Restaurer l'historique
-  const savedHistory = localStorage.getItem('conversation_history');
-  if (savedHistory) {
-    conversationHistory = JSON.parse(savedHistory);
+  // Add User Message
+  addMessageToChat(message, 'user');
+  input.value = '';
+  state.conversationHistory.push({ role: 'user', content: message });
+  
+  state.isGenerating = true;
+  const loadingId = addMessageToChat('Génération en cours...', 'system');
+  
+  try {
+    // FIX 3: Gestion Timeout API
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes
+    
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.apiKey}`
+      },
+      body: JSON.stringify({
+        model: "mistral-large-latest",
+        messages: [
+          { role: "system", content: "Tu es un expert en programmation SCL pour Siemens TIA Portal. Tu génères du code propre, commenté et optimisé. Tu réponds en français." },
+          ...state.conversationHistory
+        ],
+        max_tokens: config.maxTokens,
+        temperature: 0.3
+      }),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if(!response.ok) {
+      const err = await response.json();
+      throw new Error(err.message || 'Erreur API');
+    }
+    
+    const data = await response.json();
+    const aiResponse = data.choices[0].message.content;
+    
+    removeMessage(loadingId);
+    addMessageToChat(aiResponse, 'assistant');
+    state.conversationHistory.push({ role: 'assistant', content: aiResponse });
+    
+  } catch (error) {
+    removeMessage(loadingId);
+    let errorMsg = error.message;
+    if(error.name === 'AbortError') {
+      errorMsg = "Timeout: La génération a pris trop de temps. Essayez de réduire la demande ou augmentez les tokens.";
+    }
+    addMessageToChat(`Erreur: ${errorMsg}`, 'system');
+    showToast('Erreur de génération', 'error');
+  } finally {
+    state.isGenerating = false;
   }
-  
-  // Configuration initiale des panels
-  showConfigSection('api');
 }
 
-// ========== GESTION DE L'INTERFACE ==========
-function switchPanel(panelName) {
-  document.querySelectorAll('.sidebar-item').forEach(item => {
-    item.classList.remove('active');
-  });
-  event.target.closest('.sidebar-item').classList.add('active');
+function addMessageToChat(content, role) {
+  const container = document.getElementById('chatMessages');
+  const id = 'msg-' + Date.now();
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+  div.id = id;
   
-  document.querySelectorAll('.panel').forEach(panel => {
-    panel.classList.remove('active');
-  });
-  document.getElementById(`${panelName}-panel`).classList.add('active');
-}
-
-function toggleReviewPanel() {
-  const panel = document.getElementById('reviewPanel');
-  const btn = document.getElementById('reviewToggle');
-  panel.classList.toggle('active');
-  btn.classList.toggle('active');
-}
-
-function toggleFullscreen() {
-  const app = document.getElementById('app');
-  const btn = document.getElementById('fullscreenBtn');
-  app.classList.toggle('fullscreen');
-  
-  const icon = btn.querySelector('i');
-  if (app.classList.contains('fullscreen')) {
-    icon.className = 'ti ti-arrows-minimize';
+  if(role === 'assistant') {
+    div.innerHTML = formatCodeBlocks(content);
   } else {
-    icon.className = 'ti ti-arrows-maximize';
-  }
-}
-
-function updateStatus(status, message = '') {
-  const indicator = document.getElementById('statusIndicator');
-  const statusText = document.getElementById('statusText');
-  
-  indicator.className = 'status-indicator';
-  
-  switch(status) {
-    case 'ready':
-      statusText.textContent = 'Prêt';
-      break;
-    case 'connected':
-      statusText.textContent = 'Connecté';
-      break;
-    case 'connecting':
-      indicator.classList.add('connecting');
-      statusText.textContent = 'Génération...';
-      break;
-    case 'error':
-      indicator.classList.add('error');
-      statusText.textContent = message || 'Erreur';
-      break;
-  }
-}
-
-function autoResize(textarea) {
-  textarea.style.height = 'auto';
-  textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
-}
-
-// ========== GESTION DES MESSAGES ==========
-function addWelcomeMessage() {
-  const html = `
-    <strong>SCL SuperAgent Pro</strong> — Version avancée initialisée 🚀<br><br>
-    Fonctionnalités disponibles :
-    <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px;">
-      <span class="quality-badge"><i class="ti ti-code"></i> Génération SCL</span>
-      <span class="quality-badge"><i class="ti ti-check"></i> Validation IEC 61131-3</span>
-      <span class="quality-badge"><i class="ti ti-rocket"></i> Optimisation auto</span>
-      <span class="quality-badge"><i class="ti ti-book"></i> Documentation auto</span>
-      <span class="quality-badge"><i class="ti ti-file-export"></i> Export XML TIA</span>
-      <span class="quality-badge"><i class="ti ti-database"></i> Bibliothèque 47 snippets</span>
-      <span class="quality-badge"><i class="ti ti-share"></i> Partage collaboratif</span>
-    </div>
-  `;
-  addMessage(html, 'agent', 'Système prêt');
-}
-
-function addMessage(content, role, meta = '') {
-  const messagesDiv = document.getElementById('messages');
-  const msgDiv = document.createElement('div');
-  msgDiv.className = `msg ${role}`;
-  msgDiv.dataset.timestamp = Date.now();
-  
-  const avatar = role === 'user' ? 'U' : 'IA';
-  const avatarClass = role === 'user' ? 'user' : 'agent';
-  const metaText = meta || (role === 'user' ? 'Vous' : 'SCL Agent');
-  
-  // Formater le contenu avec les blocs de code
-  const formattedContent = formatCodeBlocks(content);
-  
-  msgDiv.innerHTML = safeHTML(`
-    <div class="msg-avatar ${avatarClass}">${escapeHtml(avatar)}</div>
-    <div class="msg-content">
-      <div class="msg-bubble">${formattedContent}</div>
-      <div class="msg-meta">
-        ${escapeHtml(metaText)}
-        ${role === 'agent' ? '<span class="quality-badge"><i class="ti ti-check"></i> Validé</span>' : ''}
-      </div>
-      <div class="msg-actions">
-        <button class="msg-action-btn" onclick="copyMessage(this)">
-          <i class="ti ti-copy"></i> Copier
-        </button>
-        ${role === 'agent' && content.includes('```') ? `
-          <button class="msg-action-btn" onclick="addToSnippets(this)">
-            <i class="ti ti-bookmark"></i> Sauvegarder
-          </button>
-          <button class="msg-action-btn" onclick="openExportModal()">
-            <i class="ti ti-download"></i> Exporter
-          </button>
-        ` : ''}
-      </div>
-    </div>
-  `);
-  
-  messagesDiv.appendChild(msgDiv);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  
-  // Si c'est du code, lancer l'analyse
-  if (role === 'agent' && content.includes('```')) {
-    analyzeCode(content);
+    div.textContent = content;
   }
   
-  return msgDiv;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return id;
+}
+
+function removeMessage(id) {
+  const el = document.getElementById(id);
+  if(el) el.remove();
 }
 
 function formatCodeBlocks(text) {
-  // Détecter les blocs de code avec ```
-  return text.replace(/```(scl|SCL)?\n([\s\S]+?)\n```/g, (match, lang, code) => {
-    const codeId = 'code_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    return `
-      <div class="code-header">
-        <span class="code-lang">SCL</span>
-        <div class="code-actions">
-          <button class="code-btn" onclick="copyCode('${codeId}')">
-            <i class="ti ti-copy"></i> Copier
-          </button>
-          <button class="code-btn" onclick="validateCode('${codeId}')">
-            <i class="ti ti-check"></i> Valider
-          </button>
-          <button class="code-btn" onclick="optimizeCode('${codeId}')">
-            <i class="ti ti-rocket"></i> Optimiser
-          </button>
-        </div>
-      </div>
-      <pre id="${codeId}">${escapeHtml(code.trim())}</pre>
-    `;
+  // Simple regex to wrap code blocks
+  return text.replace(/```(\w+)?([\s\S]*?)```/g, (match, lang, code) => {
+    return `<pre><button class="copy-btn" onclick="copyCode(this)">Copier</button><code class="language-${lang || 'scl'}">${escapeHtml(code.trim())}</code></pre>`;
   }).replace(/\n/g, '<br>');
 }
 
 function escapeHtml(text) {
-  if (!text) return '';
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
 }
 
-// Fonction de sanitization pour innerHTML
-function sanitizeHTML(html) {
-  if (!html) return '';
-  // Échapper les caractères spéciaux HTML
-  const temp = document.createElement('div');
-  temp.textContent = html;
-  return temp.innerHTML;
-}
-
-// Sanitization légère qui préserve les balises sûres (pour le formatage de code)
-function safeHTML(html) {
-  if (!html) return '';
-  // Supprimer les scripts et événements dangereux
-  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-  sanitized = sanitized.replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '');
-  sanitized = sanitized.replace(/\son\w+\s*=\s*[^\s>]*/gi, '');
-  return sanitized;
-}
-
-function addTypingIndicator() {
-  const messagesDiv = document.getElementById('messages');
-  const msgDiv = document.createElement('div');
-  msgDiv.className = 'msg';
-  msgDiv.id = 'typing-indicator';
-  
-  msgDiv.innerHTML = safeHTML(`
-    <div class="msg-avatar agent">IA</div>
-    <div class="msg-content">
-      <div class="msg-bubble">
-        <div class="typing-indicator">
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-        </div>
-      </div>
-    </div>
-  `);
-  
-  messagesDiv.appendChild(msgDiv);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-function removeTypingIndicator() {
-  const indicator = document.getElementById('typing-indicator');
-  if (indicator) indicator.remove();
-}
-
-// ========== ENVOI DE MESSAGES ==========
-async function sendMessage() {
-  const input = document.getElementById('userInput');
-  const sendBtn = document.getElementById('sendBtn');
-  const userMessage = input.value.trim();
-  
-  if (!userMessage) return;
-  
-  if (!config.apiKey) {
-    addMessage('⚠️ <strong>Configuration requise</strong><br><br>Veuillez configurer votre clé API Mistral dans l\'onglet Paramètres.', 'agent', 'Erreur');
-    switchPanel('config');
-    return;
-  }
-  
-  // Ajouter le message utilisateur
-  addMessage(userMessage, 'user');
-  input.value = '';
-  input.style.height = 'auto';
-  
-  // Désactiver l'input
-  sendBtn.disabled = true;
-  input.disabled = true;
-  
-  // Ajouter au contexte
-  conversationHistory.push({
-    role: 'user',
-    content: userMessage
-  });
-  
-  // Vérifier le cache
-  if (config.enableCache) {
-    const cached = codeCache.get(userMessage);
-    if (cached) {
-      addMessage(cached + '<br><br><em style="color: var(--text-tertiary); font-size: 11px;">📦 Réponse depuis le cache</em>', 'agent', 'Cache');
-      sendBtn.disabled = false;
-      input.disabled = false;
-      input.focus();
-      return;
-    }
-  }
-  
-  // Afficher l'indicateur de frappe
-  addTypingIndicator();
-  updateStatus('connecting');
-  
-  try {
-    if (config.enableStreaming) {
-      await sendMessageStreaming(userMessage);
-    } else {
-      await sendMessageNormal(userMessage);
-    }
-    
-    updateStatus('connected');
-    
-  } catch (error) {
-    removeTypingIndicator();
-    console.error('Erreur:', error);
-    addMessage(
-      `❌ <strong>Erreur de connexion</strong><br><br>${error.message}<br><br>Vérifiez votre clé API dans la configuration.`,
-      'agent',
-      'Erreur'
-    );
-    updateStatus('error', error.message);
-  } finally {
-    sendBtn.disabled = false;
-    input.disabled = false;
-    input.focus();
-    
-    // Sauvegarder l'historique
-    localStorage.setItem('conversation_history', JSON.stringify(conversationHistory.slice(-20)));
-  }
-}
-
-async function sendMessageNormal(userMessage) {
-  const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${config.apiKey}`
-    },
-    body: JSON.stringify({
-      model: config.model,
-      messages: [
-        { role: 'system', content: getSystemPrompt() },
-        ...conversationHistory
-      ],
-      temperature: 0.7,
-      max_tokens: config.maxTokens
-    })
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Erreur API: ${response.status} ${response.statusText}`);
-  }
-  
-  const data = await response.json();
-  const assistantMessage = data.choices[0].message.content;
-  
-  // Ajouter au contexte
-  conversationHistory.push({
-    role: 'assistant',
-    content: assistantMessage
-  });
-  
-  // Mettre en cache
-  if (config.enableCache) {
-    codeCache.set(userMessage, assistantMessage);
-  }
-  
-  // Afficher la réponse
-  removeTypingIndicator();
-  addMessage(assistantMessage, 'agent', 'SCL généré');
-}
-
-async function sendMessageStreaming(userMessage) {
-  const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${config.apiKey}`
-    },
-    body: JSON.stringify({
-      model: config.model,
-      messages: [
-        { role: 'system', content: getSystemPrompt() },
-        ...conversationHistory
-      ],
-      temperature: 0.7,
-      max_tokens: config.maxTokens,
-      stream: true
-    })
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Erreur API: ${response.status}`);
-  }
-  
-  removeTypingIndicator();
-  
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let fullMessage = '';
-  let messageDiv = null;
-  
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    
-    const chunk = decoder.decode(value);
-    const lines = chunk.split('\n').filter(line => line.trim() !== '');
-    
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        const data = line.slice(6);
-        if (data === '[DONE]') continue;
-        
-        try {
-          const parsed = JSON.parse(data);
-          const content = parsed.choices[0]?.delta?.content || '';
-          
-          if (content) {
-            fullMessage += content;
-            
-            if (!messageDiv) {
-              messageDiv = addMessage(fullMessage, 'agent', 'SCL en cours...');
-            } else {
-              const bubble = messageDiv.querySelector('.msg-bubble');
-              bubble.innerHTML = safeHTML(formatCodeBlocks(fullMessage));
-            }
-          }
-        } catch (e) {
-          console.error('Erreur parsing:', e);
-        }
-      }
-    }
-  }
-  
-  // Ajouter au contexte
-  conversationHistory.push({
-    role: 'assistant',
-    content: fullMessage
-  });
-  
-  // Mettre à jour les métadonnées
-  if (messageDiv) {
-    const meta = messageDiv.querySelector('.msg-meta');
-    meta.innerHTML = safeHTML('SCL généré <span class="quality-badge"><i class="ti ti-check"></i> Validé</span>');
-  }
-  
-  // Cache
-  if (config.enableCache) {
-    codeCache.set(userMessage, fullMessage);
-  }
-}
-
-function handleKeyPress(event) {
-  if (event.key === 'Enter' && !event.shiftKey) {
-    event.preventDefault();
-    sendMessage();
-  }
-}
-
-function useQuickPrompt(prompt) {
-  document.getElementById('userInput').value = prompt;
-  sendMessage();
-}
-
-// ========== ANALYSE DE CODE ==========
-async function analyzeCode(codeText) {
-  if (!config.enableValidation) return;
-  
-  const reviewContent = document.getElementById('reviewContent');
-  reviewContent.innerHTML = safeHTML('<div class="alert info"><i class="ti ti-loader"></i><div>Analyse en cours...</div></div>');
-  
-  try {
-    // Extraire le code SCL
-    const codeMatch = codeText.match(/```(?:scl|SCL)?\n([\s\S]+?)\n```/);
-    if (!codeMatch) {
-      reviewContent.innerHTML = safeHTML('<div class="alert info"><i class="ti ti-info-circle"></i><div>Aucun code à analyser</div></div>');
-      return;
-    }
-    
-    const code = codeMatch[1];
-    
-    // Analyse syntaxique basique
-    const analysis = performStaticAnalysis(code);
-    
-    // Afficher les résultats
-    displayCodeReview(analysis);
-    
-  } catch (error) {
-    console.error('Erreur analyse:', error);
-    reviewContent.innerHTML = safeHTML('<div class="alert error"><i class="ti ti-alert-triangle"></i><div>Erreur lors de l\'analyse</div></div>');
-  }
-}
-
-function performStaticAnalysis(code) {
-  const analysis = {
-    errors: [],
-    warnings: [],
-    suggestions: [],
-    metrics: { lines: code.split('\n').length, variables: 0, complexity: 0, functions: 0, commentLines: 0 }
-  };
-
-  // Vérifications de structure SCL
-  if (!code.includes('FUNCTION') && !code.includes('FUNCTION_BLOCK')) {
-    analysis.errors.push('Aucune déclaration FUNCTION ou FUNCTION_BLOCK trouvée');
-  }
-  if (!code.includes('END_FUNCTION') && !code.includes('END_FUNCTION_BLOCK')) {
-    analysis.errors.push('Bloc non fermé : END_FUNCTION ou END_FUNCTION_BLOCK manquant');
-  }
-
-  // Vérifier les sections VAR
-  const varSections = code.match(/VAR[_\w]*[\s\S]*?END_VAR/g) || [];
-  analysis.metrics.variables = varSections.reduce((acc, s) => acc + (s.match(/:/g) || []).length, 0);
-  analysis.metrics.functions = (code.match(/FUNCTION(?:_BLOCK)?\s+\w+/g) || []).length;
-
-  // Vérifier les types SCL valides
-  const validTypes = ['BOOL','BYTE','WORD','DWORD','INT','DINT','REAL','TIME','DATE','TOD','DT','STRING','ARRAY','STRUCT'];
-  const typeMatches = code.match(/\s:\s*(?:ARRAY\s*\[.*?\]\s+)?(\w+)/g) || [];
-  const invalidTypes = typeMatches.filter(t => {
-    const type = t.replace(/[:\s\[\]]/g,'').toUpperCase();
-    return !validTypes.some(vt => type.startsWith(vt));
-  });
-  if (invalidTypes.length > 0) {
-    analysis.warnings.push('Types potentiellement invalides: ' + invalidTypes.slice(0,3).join(', '));
-  }
-
-  // Divisions dangereuses
-  if (code.includes('/') && !code.includes('IF') && !code.includes('THEN')) {
-    analysis.warnings.push('Division détectée sans vérification de division par zéro');
-  }
-
-  // Complexité cyclomatique
-  const conditionals = (code.match(/\b(IF|CASE|FOR|WHILE|REPEAT)\b/g) || []).length;
-  analysis.metrics.complexity = conditionals + 1;
-  if (analysis.metrics.complexity > 15) {
-    analysis.warnings.push('Complexité élevée (>15) : envisagez de découper en sous-fonctions');
-  } else if (analysis.metrics.complexity > 10) {
-    analysis.suggestions.push('Complexité modérée (>10) : documentez bien les conditions');
-  }
-
-  // Commentaires
-  analysis.metrics.commentLines = (code.match(/\/\/|\(\*|\*\)/g) || []).length / 2;
-  if (analysis.metrics.commentLines / analysis.metrics.lines < 0.1 && analysis.metrics.lines > 20) {
-    analysis.suggestions.push('Ajoutez plus de commentaires (<10%) pour améliorer la maintenabilité');
-  }
-
-  // Conventions de nommage hongrois
-  const varDecls = code.match(/\s+(\w+)\s+:\s+/g) || [];
-  const nonStandard = varDecls.filter(v => {
-    const n = v.trim().replace(':','');
-    return !/^(b|r|i|s|fb|fc|db)/.test(n) && n.length > 0;
-  }).length;
-  if (nonStandard > 3) {
-    analysis.suggestions.push('Utilisez des préfixes hongrois (b_, r_, i_, s_) pour les variables');
-  }
-
-  // TIME sans T#
-  if (code.includes('TIME') && !code.includes('T#')) {
-    analysis.warnings.push('Déclaration TIME sans initialisation T#');
-  }
-
-  // Score
-  const penalty = analysis.errors.length * 20 + analysis.warnings.length * 10 + analysis.suggestions.length * 3;
-  analysis.score = Math.max(0, Math.min(100, 100 - penalty));
-  return analysis;
-}
-
-function displayCodeReview(analysis) {
-  const reviewContent = document.getElementById('reviewContent');
-  
-  let html = '';
-  
-  // Score
-  const scoreColor = analysis.score >= 80 ? 'success' : analysis.score >= 60 ? 'warning' : 'error';
-  html += `
-    <div class="review-section">
-      <div class="review-section-title">Score de qualité</div>
-      <div class="review-item ${scoreColor}">
-        <strong style="font-size: 24px;">${analysis.score}/100</strong>
-        <div style="font-size: 11px; margin-top: 4px;">
-          ${analysis.score >= 80 ? 'Excellent code !' : analysis.score >= 60 ? 'Code acceptable' : 'Améliorations nécessaires'}
-        </div>
-      </div>
-    </div>
-  `;
-  
-  // Métriques
-  html += `
-    <div class="review-section">
-      <div class="review-section-title">Métriques</div>
-      <div class="review-item">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-          <span>Lignes de code</span>
-          <strong>${analysis.metrics.lines}</strong>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-          <span>Variables déclarées</span>
-          <strong>${analysis.metrics.variables}</strong>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-          <span>Complexité</span>
-          <strong>${analysis.metrics.complexity}</strong>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  // Erreurs
-  if (analysis.errors.length > 0) {
-    html += `
-      <div class="review-section">
-        <div class="review-section-title">Erreurs (${analysis.errors.length})</div>
-        ${analysis.errors.map(err => `<div class="review-item error"><i class="ti ti-x"></i> ${err}</div>`).join('')}
-      </div>
-    `;
-  }
-  
-  // Avertissements
-  if (analysis.warnings.length > 0) {
-    html += `
-      <div class="review-section">
-        <div class="review-section-title">Avertissements (${analysis.warnings.length})</div>
-        ${analysis.warnings.map(warn => `<div class="review-item warning"><i class="ti ti-alert-triangle"></i> ${warn}</div>`).join('')}
-      </div>
-    `;
-  }
-  
-  // Suggestions
-  if (analysis.suggestions.length > 0) {
-    html += `
-      <div class="review-section">
-        <div class="review-section-title">Suggestions</div>
-        ${analysis.suggestions.map(sug => `<div class="review-item"><i class="ti ti-bulb"></i> ${sug}</div>`).join('')}
-      </div>
-    `;
-  }
-  
-  if (analysis.errors.length === 0 && analysis.warnings.length === 0) {
-    html += '<div class="review-item success"><i class="ti ti-check"></i> Aucun problème détecté !</div>';
-  }
-  
-  reviewContent.innerHTML = safeHTML(html);
-  
-  // Activer le panel si pas déjà ouvert
-  if (!document.getElementById('reviewPanel').classList.contains('active')) {
-    toggleReviewPanel();
-  }
-}
-
-// ========== ACTIONS SUR LES MESSAGES ==========
-function copyMessage(btn) {
-  const msgBubble = btn.closest('.msg-content').querySelector('.msg-bubble');
-  const text = msgBubble.innerText;
-  
-  navigator.clipboard.writeText(text).then(() => {
-    const originalText = btn.innerHTML;
-    btn.textContent = ' Copié !';
-    btn.insertBefore(document.createElement('i'), btn.firstChild);
-    btn.querySelector('i').className = 'ti ti-check';
-    setTimeout(() => {
-      btn.innerHTML = safeHTML(originalText);
-    }, 2000);
+function copyCode(btn) {
+  const code = btn.nextElementSibling.textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = 'Copié!';
+    setTimeout(() => btn.textContent = 'Copier', 2000);
   });
 }
 
-function copyCode(codeId) {
-  const codeElement = document.getElementById(codeId);
-  const text = codeElement.innerText;
-  
-  navigator.clipboard.writeText(text).then(() => {
-    alert('Code copié dans le presse-papier !');
-  });
+function clearConversation() {
+  state.conversationHistory = [];
+  document.getElementById('chatMessages').innerHTML = '<div class="message assistant">Conversation effacée. Nouveau départ !</div>';
+  showToast('Conversation réinitialisée', 'success');
 }
 
-async function validateCode(codeId) {
-  const codeElement = document.getElementById(codeId);
-  const code = codeElement.innerText;
-  
-  const analysis = performStaticAnalysis(code);
-  displayCodeReview(analysis);
+function exportConversation() {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.conversationHistory, null, 2));
+  const downloadAnchorNode = document.createElement('a');
+  downloadAnchorNode.setAttribute("href", dataStr);
+  downloadAnchorNode.setAttribute("download", "scl_conversation_" + new Date().toISOString().slice(0,10) + ".json");
+  document.body.appendChild(downloadAnchorNode);
+  downloadAnchorNode.click();
+  downloadAnchorNode.remove();
+  showToast('Export réussi', 'success');
 }
 
-function optimizeCode(codeId) {
-  const codeElement = document.getElementById(codeId);
-  const code = codeElement.innerText;
-  
-  document.getElementById('userInput').value = `Optimise ce code SCL pour réduire le temps de cycle et améliorer les performances :\n\n\`\`\`scl\n${code}\n\`\`\``;
-  sendMessage();
+// --- Configuration Modal ---
+function openConfig() {
+  document.getElementById('configModal').style.display = 'flex';
 }
 
-function addToSnippets(btn) {
-  const msgBubble = btn.closest('.msg-content').querySelector('.msg-bubble');
-  const codeMatch = msgBubble.innerHTML.match(/<pre[^>]*>([\s\S]+?)<\/pre>/);
-  
-  if (codeMatch) {
-    const code = codeMatch[1].replace(/<[^>]+>/g, '');
-    const title = prompt('Nom du snippet :');
-    
-    if (title) {
-      const snippet = {
-        id: Date.now(),
-        title: escapeHtml(title),
-        code,
-        category: 'Personnel',
-        description: 'Ajouté depuis une conversation',
-        date: new Date().toISOString()
-      };
-      
-      snippetsLibrary.push(snippet);
-      localStorage.setItem('snippets', JSON.stringify(snippetsLibrary));
-      
-      alert('✅ Snippet ajouté à la bibliothèque !');
-    }
-  }
+function closeConfig() {
+  document.getElementById('configModal').style.display = 'none';
 }
 
-// ========== PROJETS ==========
-function loadProjects() {
-  const projects = [
-    { id: 'default', name: 'Station AEP Secteur Nord', type: 'AEP', cpu: 'S7-1500', blocks: 24, date: '2025-05-15' },
-    { id: 'projet2', name: 'Relevage EU Zone Industrielle', type: 'Relevage', cpu: 'S7-1200', blocks: 18, date: '2025-05-10' },
-    { id: 'projet3', name: 'Surpression Immeuble R+12', type: 'Surpression', cpu: 'S7-1200', blocks: 12, date: '2025-05-05' }
-  ];
-  
-  const projectsList = document.getElementById('projectsList');
-  projectsList.innerHTML = safeHTML(projects.map(p => `
-    <div class="project-item ${p.id === currentProject ? 'active' : ''}" onclick="selectProject('${p.id}')">
-      <div class="project-name">${escapeHtml(p.name)}</div>
-      <div class="project-meta">
-        <span><i class="ti ti-cpu"></i> ${escapeHtml(p.cpu)}</span>
-        <span><i class="ti ti-code"></i> ${p.blocks} blocs</span>
-        <span><i class="ti ti-calendar"></i> ${escapeHtml(p.date)}</span>
-      </div>
-    </div>
-  `).join(''));
-}
-
-function switchProject() {
-  const selector = document.getElementById('projectSelector');
-  currentProject = selector.value;
-  loadProjects();
-  
-  // Réinitialiser la conversation
-  conversationHistory = [];
-  document.getElementById('messages').innerHTML = '';
-  addWelcomeMessage();
-}
-
-function selectProject(projectId) {
-  currentProject = projectId;
-  document.getElementById('projectSelector').value = projectId;
-  switchProject();
-}
-
-// ========== BIBLIOTHÈQUE SCL ÉTENDUE ==========
-const SCL_LIBRARY = {
-  pumps: {
-    startStop: {
-      title: 'Démarrage/Arrêt pompe',
-      category: 'Pompes',
-      description: 'Bloc basique avec temporisation et verrouillages',
-      code: `FUNCTION_BLOCK FB_PompeStartStop
-VAR_INPUT
-    bCmd_Start : BOOL;
-    bCmd_Stop : BOOL;
-    bArret_Urgence : BOOL;
-    rTempo_Min : TIME := T#5S;
-END_VAR
-VAR_OUTPUT
-    bPompe_Marche : BOOL;
-    bDefaut : BOOL;
-    rEtat : INT;
-END_VAR
-VAR
-    fbTempo : TON_TIME;
-    bMemoire : BOOL;
-END_VAR
-IF bArret_Urgence THEN bPompe_Marche := FALSE; bDefaut := FALSE; rEtat := 0; RETURN; END_IF;
-IF bCmd_Start AND NOT bCmd_Stop THEN bMemoire := TRUE;
-ELSIF bCmd_Stop AND NOT bCmd_Start THEN bMemoire := FALSE; END_IF;
-fbTempo(IN := bMemoire, PT := rTempo_Min);
-bPompe_Marche := fbTempo.Q;
-IF bPompe_Marche THEN rEtat := 1; ELSE rEtat := 0; END_IF;
-END_FUNCTION_BLOCK`
-    },
-    alternance: {
-      title: 'Alternance 2 pompes',
-      category: 'Pompes',
-      description: 'Système d\'alternance avec compteur heures de marche',
-      code: `FUNCTION_BLOCK FB_Alternance_2Pompes
-VAR_INPUT
-    bDemande : BOOL;
-    rHeures_P1 : REAL;
-    rHeures_P2 : REAL;
-    bDefaut_P1 : BOOL;
-    bDefaut_P2 : BOOL;
-END_VAR
-VAR_OUTPUT
-    bMarche_P1 : BOOL;
-    bMarche_P2 : BOOL;
-    iPompe_Active : INT;
-    bAlarme : BOOL;
-END_VAR
-VAR bPermute : BOOL; rSeuil_Ecart : REAL := 10.0; END_VAR
-bAlarme := bDefaut_P1 AND bDefaut_P2;
-IF NOT bAlarme THEN
-  IF bDefaut_P1 THEN bMarche_P1 := FALSE; bMarche_P2 := bDemande; iPompe_Active := 2;
-  ELSIF bDefaut_P2 THEN bMarche_P2 := FALSE; bMarche_P1 := bDemande; iPompe_Active := 1;
-  ELSIF rHeures_P1 < rHeures_P2 - rSeuil_Ecart THEN bMarche_P1 := bDemande; bMarche_P2 := FALSE; iPompe_Active := 1;
-  ELSIF rHeures_P2 < rHeures_P1 - rSeuil_Ecart THEN bMarche_P2 := bDemande; bMarche_P1 := FALSE; iPompe_Active := 2;
-  ELSE STATIC VAR bLastCycle : BOOL := FALSE; END_VAR;
-    IF bDemande AND NOT bLastCycle THEN bPermute := NOT bPermute; END_IF;
-    bLastCycle := bDemande;
-    IF bPermute THEN bMarche_P1 := bDemande; iPompe_Active := 1; ELSE bMarche_P2 := bDemande; iPompe_Active := 2; END_IF;
-  END_IF;
-ELSE bMarche_P1 := FALSE; bMarche_P2 := FALSE; iPompe_Active := 0; END_IF;
-END_FUNCTION_BLOCK`
-    }
-  },
-  regulation: {
-    pidCompact: {
-      title: 'PID Pression avec anti-windup',
-      category: 'Régulation',
-      description: 'Régulation PID pour pression avec limitations',
-      code: `FUNCTION_BLOCK FB_PID_Pression
-VAR_INPUT
-    rSetpoint : REAL; rProcessValue : REAL;
-    bMode_Auto : BOOL; bMode_Manuel : BOOL;
-    rOutput_Manuel : REAL;
-    rGain : REAL := 2.0; rTi : REAL := 10.0; rTd : REAL := 2.0;
-    rOutput_Min : REAL := 0.0; rOutput_Max : REAL := 100.0;
-    rCycle_Time : TIME := T#100MS;
-END_VAR
-VAR_OUTPUT
-    rOutput : REAL; rError : REAL;
-    bLimite_Haute : BOOL; bLimite_Basse : BOOL;
-    iEtat : INT;
-END_VAR
-VAR
-    rError_Precedente : REAL; rSomme_Error : REAL;
-    rDerivee : REAL; rDeltaT : REAL;
-END_VAR
-rDeltaT := TIME_TO_SEC(rCycle_Time);
-IF bMode_Manuel THEN rOutput := LIMIT(rOutput_Min, rOutput_Manuel, rOutput_Max); rSomme_Error := 0.0; iEtat := 0; RETURN; END_IF;
-IF NOT bMode_Auto THEN iEtat := 2; RETURN; END_IF;
-iEtat := 1; rError := rSetpoint - rProcessValue;
-STATIC rTermP : REAL; rTermI : REAL; rTermD : REAL; END_VAR
-rTermP := rGain * rError;
-IF ABS(rSomme_Error) < 1000.0 THEN rSomme_Error := rSomme_Error + rError * rDeltaT / rTi; END_IF;
-rTermI := rGain * rSomme_Error / rTi;
-IF rTi > 0.0 THEN rDerivee := (rError - rError_Precedente) / rDeltaT; rTermD := rGain * rTd * rDerivee; END_IF;
-rError_Precedente := rError;
-rOutput := rTermP + rTermI + rTermD;
-IF rOutput > rOutput_Max THEN rOutput := rOutput_Max; bLimite_Haute := TRUE; IF rError > 0.0 THEN rSomme_Error := rSomme_Error - rError * rDeltaT / rTi; END_IF; ELSE bLimite_Haute := FALSE; END_IF;
-IF rOutput < rOutput_Min THEN rOutput := rOutput_Min; bLimite_Basse := TRUE; IF rError < 0.0 THEN rSomme_Error := rSomme_Error - rError * rDeltaT / rTi; END_IF; ELSE bLimite_Basse := FALSE; END_IF;
-END_FUNCTION_BLOCK`
-    }
-  },
-  safety: {
-    alarmes: {
-      title: 'Gestion alarmes avec acquittement',
-      category: 'Sécurité',
-      description: 'Bloc complet avec hiérarchie et signaux',
-      code: `FUNCTION_BLOCK FB_Gestion_Alarmes
-VAR_INPUT
-    bAlarme_Niveau_Haut : BOOL; bAlarme_Niveau_Bas : BOOL;
-    bAlarme_Pression_Haute : BOOL; bAlarme_Pression_Basse : BOOL;
-    bAlarme_Temperature : BOOL; bAlarme_Defaut_Elec : BOOL;
-    bBouton_Acquittement : BOOL;
-END_VAR
-VAR_OUTPUT
-    bAlarme_Active : BOOL; bAlarme_Acquittee : BOOL;
-    bSignal_Sonore : BOOL; bSignal_Lumineux : BOOL;
-    iCode_Alarme : INT; sTexte_Alarme : STRING[80];
-END_VAR
-VAR bMemoire_Alarme : BOOL; fbClignotant : TP_TIME; END_VAR
-STATIC bAnyAlarm : BOOL; END_VAR
-bAnyAlarm := bAlarme_Niveau_Haut OR bAlarme_Niveau_Bas OR bAlarme_Pression_Haute OR bAlarme_Pression_Basse OR bAlarme_Temperature OR bAlarme_Defaut_Elec;
-IF bAnyAlarm AND NOT bMemoire_Alarme THEN bMemoire_Alarme := TRUE; bAlarme_Acquittee := FALSE; END_IF;
-IF bBouton_Acquittement AND NOT bAnyAlarm THEN bMemoire_Alarme := FALSE; bAlarme_Acquittee := TRUE; END_IF;
-bAlarme_Active := bAnyAlarm OR bMemoire_Alarme;
-IF bMemoire_Alarme THEN bSignal_Sonore := TRUE; fbClignotant(IN := TRUE, PT := T#1S); bSignal_Lumineux := fbClignotant.Q;
-ELSIF bAnyAlarm THEN bSignal_Sonore := FALSE; bSignal_Lumineux := TRUE;
-ELSE bSignal_Sonore := FALSE; bSignal_Lumineux := FALSE; END_IF;
-IF bAlarme_Defaut_Elec THEN iCode_Alarme := 6; sTexte_Alarme := 'DEFAUT ELECTRIQUE';
-ELSIF bAlarme_Temperature THEN iCode_Alarme := 5; sTexte_Alarme := 'SURCHAUFFE MOTEUR';
-ELSIF bAlarme_Niveau_Bas THEN iCode_Alarme := 4; sTexte_Alarme := 'NIVEAU BAS - MARCHE A SEC';
-ELSIF bAlarme_Pression_Haute THEN iCode_Alarme := 3; sTexte_Alarme := 'PRESSION TROP ELEVEE';
-ELSIF bAlarme_Niveau_Haut THEN iCode_Alarme := 2; sTexte_Alarme := 'NIVEAU HAUT RESERVOIR';
-ELSIF bAlarme_Pression_Basse THEN iCode_Alarme := 1; sTexte_Alarme := 'PRESSION INSUFFISANTE';
-ELSE iCode_Alarme := 0; sTexte_Alarme := ''; END_IF;
-END_FUNCTION_BLOCK`
-    }
-  }
-};
-
-// ========== SNIPPETS ==========
-let snippetsLibrary = [];
-
-function loadSnippets() {
-  const saved = localStorage.getItem('snippets');
-  if (saved) {
-    snippetsLibrary = JSON.parse(saved);
+function saveConfig() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if(key) {
+    config.apiKey = key;
+    localStorage.setItem('mistral_api_key', key);
+    showToast('Configuration sauvegardée', 'success');
+    closeConfig();
   } else {
-    snippetsLibrary = [
-      { id: 1, title: 'Démarrage pompe simple', category: 'Pompes', description: 'Bloc basique de démarrage/arrêt avec temporisation', code: SCL_LIBRARY.pumps.startStop.code },
-      { id: 2, title: 'PID Pression', category: 'Régulation', description: 'Régulation PID pour pression de refoulement', code: SCL_LIBRARY.regulation.pidCompact.code },
-      { id: 3, title: 'Alternance 2 pompes', category: 'Pompes', description: 'Système d\'alternance avec compteur heures de marche', code: SCL_LIBRARY.pumps.alternance.code },
-      { id: 4, title: 'Gestion alarmes', category: 'Sécurité', description: 'Bloc complet avec acquittement et signaux', code: SCL_LIBRARY.safety.alarmes.code }
-    ];
-  }
-  displaySnippets();
-}
-
-
-function displaySnippets() {
-  const grid = document.getElementById('snippetsGrid');
-  grid.innerHTML = safeHTML(snippetsLibrary.map(s => `
-    <div class="snippet-card" onclick="useSnippet(${s.id})">
-      <div class="snippet-header">
-        <div class="snippet-title">${escapeHtml(s.title)}</div>
-        <div class="snippet-category">${escapeHtml(s.category)}</div>
-      </div>
-      <div class="snippet-desc">${escapeHtml(s.description)}</div>
-      <div class="snippet-preview">${escapeHtml(s.code.substring(0, 100))}...</div>
-    </div>
-  `).join(''));
-}
-
-function useSnippet(snippetId) {
-  const snippet = snippetsLibrary.find(s => s.id === snippetId);
-  if (snippet) {
-    switchPanel('chat');
-    setTimeout(() => {
-      document.getElementById('userInput').value = `Utilise ce snippet comme base et adapte-le pour ${config.stationType} :\n\n\`\`\`scl\n${snippet.code}\n\`\`\``;
-    }, 100);
+    showToast('Clé API invalide', 'error');
   }
 }
 
-// ========== CONFIGURATION ==========
-function showConfigSection(section) {
-  const content = document.getElementById('configContent');
-  
-  switch(section) {
-    case 'api':
-      content.innerHTML = generateAPIConfig();
-      break;
-    case 'context':
-      content.innerHTML = generateContextConfig();
-      break;
-    case 'features':
-      content.innerHTML = generateFeaturesConfig();
-      break;
-    case 'export':
-      content.innerHTML = generateExportConfig();
-      break;
-    case 'advanced':
-      content.innerHTML = generateAdvancedConfig();
-      break;
-  }
-  
-  // Mettre à jour la sélection
-  document.querySelectorAll('.config-sidebar .sidebar-item').forEach(item => {
-    item.classList.remove('active');
-  });
-  event.target.closest('.sidebar-item').classList.add('active');
-}
-
-function generateAPIConfig() {
-  return `
-    <div class="config-section">
-      <div class="config-section-title">
-        <i class="ti ti-plug"></i>
-        Configuration API Mistral
-      </div>
-      
-      <div class="field-group">
-        <label class="field-label">Clé API Mistral</label>
-        <input type="password" class="field-input" id="apiKey" value="${config.apiKey}" placeholder="sk-...">
-        <div class="field-hint">Obtenez votre clé sur <a href="https://console.mistral.ai" target="_blank" rel="noopener noreferrer">console.mistral.ai</a></div>
-      </div>
-      
-      <div class="field-group">
-        <label class="field-label">Modèle principal</label>
-        <select class="field-select" id="modelSelect">
-          <option value="mistral-small-latest" ${config.model === 'mistral-small-latest' ? 'selected' : ''}>Mistral Small (gratuit)</option>
-          <option value="open-mistral-7b">Open Mistral 7B (gratuit)</option>
-          <option value="open-mixtral-8x7b">Open Mixtral 8x7B (gratuit)</option>
-          <option value="mistral-medium-latest">Mistral Medium</option>
-          <option value="mistral-large-latest">Mistral Large</option>
-        </select>
-      </div>
-      
-      <div class="field-group">
-        <label class="field-label">Limite de tokens (max_tokens): <span id="maxTokensValue">${config.maxTokens}</span></label>
-        <input type="range" class="field-range" id="maxTokensSlider" min="512" max="8192" step="256" value="${config.maxTokens}" 
-               oninput="document.getElementById('maxTokensValue').textContent = this.value; config.maxTokens = parseInt(this.value);">
-        <div class="field-hint">Contrôle la longueur maximale des réponses. Augmentez pour les générations longues (code complexe, documentation).</div>
-      </div>
-      
-      <button class="btn-primary" onclick="saveAPIConfig()">
-        <i class="ti ti-check"></i>
-        Sauvegarder et tester
-      </button>
-      
-      <div id="apiTestResult"></div>
-    </div>
-    
-    <div class="config-section">
-      <div class="config-section-title">
-        <i class="ti ti-topology-star"></i>
-        Multi-modèles (Avancé)
-      </div>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">Utiliser différents modèles par tâche</span>
-        <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
-      </div>
-      
-      <div class="field-hint" style="margin-top: 8px;">
-        Assignez des modèles spécifiques pour la génération, validation, et optimisation de code.
-      </div>
-    </div>
-  `;
-}
-
-function generateContextConfig() {
-  return `
-    <div class="config-section">
-      <div class="config-section-title">
-        <i class="ti ti-cpu"></i>
-        Contexte automate
-      </div>
-      
-      <div class="field-group">
-        <label class="field-label">Famille CPU</label>
-        <select class="field-select" id="cpuFamily">
-          <option ${config.cpuFamily === 'S7-1200' ? 'selected' : ''}>S7-1200</option>
-          <option ${config.cpuFamily === 'S7-1500' ? 'selected' : ''}>S7-1500</option>
-          <option>S7-300</option>
-          <option>S7-400</option>
-        </select>
-      </div>
-      
-      <div class="field-group">
-        <label class="field-label">Version TIA Portal</label>
-        <select class="field-select" id="tiaVersion">
-          <option ${config.tiaVersion === 'TIA Portal V18' ? 'selected' : ''}>TIA Portal V18</option>
-          <option ${config.tiaVersion === 'TIA Portal V17' ? 'selected' : ''}>TIA Portal V17</option>
-          <option ${config.tiaVersion === 'TIA Portal V16' ? 'selected' : ''}>TIA Portal V16</option>
-          <option>TIA Portal V15.1</option>
-        </select>
-      </div>
-      
-      <div class="field-group">
-        <label class="field-label">Type de station</label>
-        <select class="field-select" id="stationType">
-          <option ${config.stationType === 'AEP' ? 'selected' : ''}>AEP — Alimentation eau potable</option>
-          <option ${config.stationType === 'Relevage' ? 'selected' : ''}>Relevage eaux usées</option>
-          <option ${config.stationType === 'Irrigation' ? 'selected' : ''}>Irrigation agricole</option>
-          <option ${config.stationType === 'Surpression' ? 'selected' : ''}>Surpression réseau</option>
-          <option ${config.stationType === 'Industriel' ? 'selected' : ''}>Pompage industriel</option>
-        </select>
-      </div>
-      
-      <div class="field-group">
-        <label class="field-label">Contraintes spécifiques (optionnel)</label>
-        <textarea class="field-textarea" id="constraints" placeholder="Ex: Respect norme NF EN 12845, pression max 10 bars, débit nominal 150 m³/h..."></textarea>
-      </div>
-      
-      <button class="btn-primary" onclick="saveContextConfig()">
-        <i class="ti ti-check"></i>
-        Sauvegarder le contexte
-      </button>
-    </div>
-  `;
-}
-
-function generateFeaturesConfig() {
-  return `
-    <div class="config-section">
-      <div class="config-section-title">
-        <i class="ti ti-sparkles"></i>
-        Fonctionnalités IA
-      </div>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">Streaming des réponses</span>
-        <div class="toggle-switch ${config.enableStreaming ? 'active' : ''}" onclick="toggleFeature(this, 'enableStreaming')"></div>
-      </div>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">Validation automatique du code</span>
-        <div class="toggle-switch ${config.enableValidation ? 'active' : ''}" onclick="toggleFeature(this, 'enableValidation')"></div>
-      </div>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">Optimisation automatique</span>
-        <div class="toggle-switch ${config.enableOptimization ? 'active' : ''}" onclick="toggleFeature(this, 'enableOptimization')"></div>
-      </div>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">Documentation automatique</span>
-        <div class="toggle-switch ${config.enableAutoDoc ? 'active' : ''}" onclick="toggleFeature(this, 'enableAutoDoc')"></div>
-      </div>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">Cache des réponses</span>
-        <div class="toggle-switch ${config.enableCache ? 'active' : ''}" onclick="toggleFeature(this, 'enableCache')"></div>
-      </div>
-    </div>
-    
-    <div class="config-section">
-      <div class="config-section-title">
-        <i class="ti ti-accessible"></i>
-        Accessibilité
-      </div>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">Raccourcis clavier</span>
-        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
-      </div>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">Lecteur d'écran</span>
-        <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
-      </div>
-      
-      <div class="field-hint" style="margin-top: 8px;">
-        <strong>Raccourcis :</strong> Ctrl+Enter (envoyer), Ctrl+K (nouvelle conv.), Ctrl+/ (aide)
-      </div>
-    </div>
-  `;
-}
-
-function generateExportConfig() {
-  return `
-    <div class="config-section">
-      <div class="config-section-title">
-        <i class="ti ti-file-export"></i>
-        Options d'export
-      </div>
-      
-      <div class="field-group">
-        <label class="field-label">Format XML TIA Portal</label>
-        <select class="field-select">
-          <option>Format TIA Portal V18 (recommandé)</option>
-          <option>Format TIA Portal V17</option>
-          <option>Format TIA Portal V16</option>
-          <option>Format STEP 7 Classic</option>
-        </select>
-      </div>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">Inclure les commentaires dans l'export</span>
-        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
-      </div>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">Générer la documentation PDF</span>
-        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
-      </div>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">Exporter les Data Blocks</span>
-        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
-      </div>
-    </div>
-    
-    <div class="config-section">
-      <div class="config-section-title">
-        <i class="ti ti-puzzle"></i>
-        Plugins & Extensions
-      </div>
-      
-      <div class="alert info">
-        <i class="ti ti-info-circle"></i>
-        <div>
-          <strong>Plugin TIA Portal en développement</strong><br>
-          Intégration directe dans TIA Portal pour importer le code en un clic.
-        </div>
-      </div>
-      
-      <div class="field-group">
-        <label class="field-label">Dossier d'export par défaut</label>
-        <input type="text" class="field-input" value="C:\Users\Public\Documents\SCL_Export">
-      </div>
-    </div>
-  `;
-}
-
-function generateAdvancedConfig() {
-  return `
-    <div class="config-section">
-      <div class="config-section-title">
-        <i class="ti ti-adjustments"></i>
-        Paramètres avancés
-      </div>
-      
-      <div class="field-group">
-        <label class="field-label">Température (créativité)</label>
-        <input type="range" min="0" max="100" value="70" class="field-input" 
-          oninput="this.nextElementSibling.textContent = (this.value/100).toFixed(2)">
-        <span style="font-size: 12px; color: var(--text-secondary);">0.70</span>
-        <div class="field-hint">Plus élevé = réponses plus créatives, plus bas = plus déterministes</div>
-      </div>
-      
-      <div class="field-group">
-        <label class="field-label">Tokens maximum par réponse</label>
-        <input type="number" class="field-input" value="3000" min="500" max="8000">
-      </div>
-      
-      <div class="field-group">
-        <label class="field-label">Historique de conversation (messages)</label>
-        <input type="number" class="field-input" value="20" min="5" max="50">
-      </div>
-    </div>
-    
-    <div class="config-section">
-      <div class="config-section-title">
-        <i class="ti ti-shield-lock"></i>
-        Sécurité & Audit
-      </div>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">Audit des entrées utilisateur</span>
-        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
-      </div>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">Validation stricte du code généré</span>
-        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
-      </div>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">Log des erreurs</span>
-        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
-      </div>
-    </div>
-    
-    <div class="config-section">
-      <div class="config-section-title" style="color: var(--coral-800);">
-        <i class="ti ti-trash"></i>
-        Zone de danger
-      </div>
-      
-      <button class="btn-secondary" onclick="clearCache()">
-        <i class="ti ti-refresh"></i>
-        Vider le cache
-      </button>
-      
-      <button class="btn-secondary" onclick="resetConfig()" style="margin-left: 8px;">
-        <i class="ti ti-refresh"></i>
-        Réinitialiser la configuration
-      </button>
-      
-      <button class="btn-secondary" onclick="clearHistory()" style="margin-left: 8px; color: var(--coral-800);">
-        <i class="ti ti-trash"></i>
-        Supprimer l'historique
-      </button>
-    </div>
-  `;
-}
-
-function saveAPIConfig() {
-  const apiKey = document.getElementById('apiKey').value.trim();
-  const model = document.getElementById('modelSelect').value;
-  const maxTokens = config.maxTokens;
-  
-  if (!apiKey) {
-    document.getElementById('apiTestResult').innerHTML = '<div class="alert error"><i class="ti ti-alert-triangle"></i><div>Veuillez entrer une clé API</div></div>';
-    return;
-  }
-  
-  config.apiKey = apiKey;
-  config.model = model;
-  config.maxTokens = maxTokens;
-  
-  localStorage.setItem('mistral_api_key', apiKey);
-  localStorage.setItem('mistral_model', model);
-  localStorage.setItem('mistral_max_tokens', maxTokens.toString());
-  
-  document.getElementById('apiTestResult').innerHTML = '<div class="alert success"><i class="ti ti-check"></i><div>Configuration sauvegardée avec succès !</div></div>';
-  updateStatus('connected');
-}
-
-function saveContextConfig() {
-  config.cpuFamily = document.getElementById('cpuFamily').value;
-  config.tiaVersion = document.getElementById('tiaVersion').value;
-  config.stationType = document.getElementById('stationType').value;
-  
-  localStorage.setItem('cpu_family', config.cpuFamily);
-  localStorage.setItem('tia_version', config.tiaVersion);
-  localStorage.setItem('station_type', config.stationType);
-  
-  alert('✅ Contexte sauvegardé !');
-}
-
-function toggleFeature(element, feature) {
-  element.classList.toggle('active');
-  config[feature] = element.classList.contains('active');
-  localStorage.setItem(feature, config[feature]);
-}
-
-function toggleSwitch(element) {
-  element.classList.toggle('active');
-}
-
-function clearCache() {
-  if (confirm('Voulez-vous vraiment vider le cache ?')) {
-    codeCache.clear();
-    alert('✅ Cache vidé !');
-  }
-}
-
-function resetConfig() {
-  if (confirm('Voulez-vous vraiment réinitialiser toute la configuration ?')) {
-    localStorage.clear();
-    location.reload();
-  }
-}
-
-function clearHistory() {
-  if (confirm('⚠️ Cela supprimera définitivement tout l\'historique de conversation. Continuer ?')) {
-    conversationHistory = [];
-    localStorage.removeItem('conversation_history');
-    document.getElementById('messages').innerHTML = '';
-    addWelcomeMessage();
-    alert('✅ Historique supprimé !');
-  }
-}
-
-// ========== MODALS ==========
-function openExportModal() {
-  document.getElementById('exportModal').classList.add('active');
-}
-
-function openShareModal() {
-  document.getElementById('shareModal').classList.add('active');
-}
-
-function closeModal(modalId) {
-  document.getElementById(modalId).classList.remove('active');
-}
-
-function exportAs(format) {
-  // Récupérer le dernier code généré
-  const messages = document.querySelectorAll('.msg.agent .msg-bubble pre');
-  if (messages.length === 0) {
-    alert('Aucun code à exporter');
-    return;
-  }
-  
-  const lastCode = messages[messages.length - 1].innerText;
-  
-  let content, filename, mimeType;
-  
-  switch(format) {
-    case 'scl':
-      content = lastCode;
-      filename = 'export.scl';
-      mimeType = 'text/plain';
-      break;
-      
-    case 'xml':
-      content = generateTIAXML(lastCode);
-      filename = 'export_tia.xml';
-      mimeType = 'application/xml';
-      break;
-      
-    case 'pdf':
-      alert('Export PDF en développement');
-      return;
-      
-    case 'project':
-      alert('Export projet complet en développement');
-      return;
-  }
-  
-  // Télécharger
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-  
-  closeModal('exportModal');
-  alert(`✅ Fichier ${filename} téléchargé !`);
-}
-
-function generateTIAXML(code) {
-  // Génération basique de XML TIA Portal
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<Document>
-  <Engineering version="V18" />
-  <DocumentInfo>
-    <Created>2025-05-20T12:00:00</Created>
-    <ExportSetting>WithDefaults</ExportSetting>
-  </DocumentInfo>
-  <SW.Blocks.FC ID="0">
-    <AttributeList>
-      <Name>FC_Export</Name>
-      <Number>1</Number>
-      <ProgrammingLanguage>SCL</ProgrammingLanguage>
-    </AttributeList>
-    <ObjectList>
-      <SW.Blocks.CompileUnit>
-        <AttributeList>
-          <NetworkSource><![CDATA[
-${code}
-          ]]></NetworkSource>
-        </AttributeList>
-      </SW.Blocks.CompileUnit>
-    </ObjectList>
-  </SW.Blocks.FC>
-</Document>`;
-}
-
-function copyShareLink() {
-  const link = document.getElementById('shareLink').value;
-  navigator.clipboard.writeText(link);
-  alert('✅ Lien copié dans le presse-papier !');
-}
-
-function shareToGallery() {
-  alert('🚀 Fonctionnalité de galerie communautaire en développement');
-  closeModal('shareModal');
-}
-
-// ========== FONCTIONS UTILITAIRES ==========
-function attachFile() {
-  alert('📎 Import de fichiers .scl en développement');
-}
-
-function toggleVoice() {
-  alert('🎤 Entrée vocale en développement');
-}
-
-// ========== VALIDATEUR SCL ==========
-function openValidator() {
-  switchPanel('chat');
-  setTimeout(() => {
-    const input = document.getElementById('userInput');
-    input.value = 'Analyse ce code SCL et détecte toutes les erreurs de syntaxe, problèmes de typage, et optimisations possibles. Fournis un rapport détaillé avec score de qualité.';
-    input.focus();
-  }, 100);
-}
-
-// ========== OPTIMISEUR DE CODE ==========
-function openOptimizer() {
-  showFeaturePanel('optimizer');
-}
-
-// ========== GÉNÉRATEUR DE DOCUMENTATION ==========
-function openDocGenerator() {
-  showFeaturePanel('documentation');
-}
-
-// ========== VALIDATEUR STANDALONE ==========
-function runStandaloneValidator(code) {
-  if (!code || !code.trim()) {
-    return { errors: [{rule: 'INPUT', message: 'Code vide'}], warnings: [], info: [], score: 0 };
-  }
-  const validator = new SCLValidator();
-  return validator.validate(code);
-}
-
-// ========== OPTIMISEUR STANDALONE ==========
-function runStandaloneOptimizer(code) {
-  if (!code || !code.trim()) {
-    return [];
-  }
-  const optimizer = new SCLOptimizer();
-  return optimizer.analyze(code);
-}
-
-// ========== GÉNÉRATEUR STANDALONE ==========
-function runStandaloneDocGenerator(code) {
-  if (!code || !code.trim()) {
-    return { name: 'Inconnu', inputs: [], outputs: [], inouts: [], locals: [], algorithm: [] };
-  }
-  const generator = new DocGenerator();
-  return generator.generate(code);
-}
-
-// Fermer les modals en cliquant à l'extérieur
-document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('modal-overlay')) {
-    e.target.classList.remove('active');
-  }
-});
-
-// Raccourcis clavier
-document.addEventListener('keydown', (e) => {
-  // Ctrl+Enter pour envoyer
-  if (e.ctrlKey && e.key === 'Enter') {
-    sendMessage();
-  }
-  
-  // Ctrl+K pour nouvelle conversation
-  if (e.ctrlKey && e.key === 'k') {
-    e.preventDefault();
-    if (confirm('Nouvelle conversation ?')) {
-      conversationHistory = [];
-      document.getElementById('messages').innerHTML = '';
-      addWelcomeMessage();
-    }
-  }
-  
-  // Ctrl+/ pour aide
-  if (e.ctrlKey && e.key === '/') {
-    e.preventDefault();
-    alert('Raccourcis:\nCtrl+Enter: Envoyer\nCtrl+K: Nouvelle conversation\nCtrl+/: Aide');
-  }
-});
-
-// Fonction pour afficher les panels de nouvelles fonctionnalités
-function showFeaturePanel(feature) {
-  // Masquer tous les panels
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-  
-  // Activer le panel correspondant
-  const panelMap = {
-    'library': 'library-panel',
-    'validator': 'validator-panel',
-    'optimizer': 'optimizer-panel',
-    'documentation': 'documentation-panel'
-  };
-  
-  const panelId = panelMap[feature];
-  if (panelId) {
-    document.getElementById(panelId).classList.add('active');
-  }
-  
-  // Initialiser le contenu si nécessaire
-  if (feature === 'library') {
-    renderLibraryCategories();
-  }
-}
-
-// Fonction pour changer d'onglet dans les panels
-function switchTab(feature, tabName) {
-  const panel = document.getElementById(feature + '-panel');
-  panel.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  panel.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  
-  event.target.classList.add('active');
-  document.getElementById(feature + '-' + tabName + '-tab').classList.add('active');
-}
-
-// Bibliothèque SCL étendue
+// --- Library System ---
 const EXTENDED_SCL_LIBRARY = {
-  pumps: {
-    title: 'Pompes & Fluides',
-    icon: 'ti-droplet',
-    color: 'pumps',
-    description: 'Snippets pour pompes, pressions, débits et systèmes fluides',
+  pumps: { 
+    title: 'Pompes & Fluides', 
+    icon: 'ti-droplet', 
     snippets: [
-      { name: 'Démarrage Pompe', code: 'IF StartCommand AND NOT Fault THEN\n  PumpOutput := TRUE;\nEND_IF;' },
-      { name: 'Alternance 2 Pompes', code: 'IF Level > StartLevel THEN\n  IF Pump1Hours < Pump2Hours THEN\n    Pump1 := TRUE;\n  ELSE\n    Pump2 := TRUE;\n  END_IF;\nEND_IF;' },
-      { name: 'Protection Marche à Sec', code: 'IF MinLevelSensor OR Pressure < MinPressure THEN\n  PumpOutput := FALSE;\n  DryRunFault := TRUE;\nEND_IF;' }
+      { name: 'Démarrage Pompe', code: 'FUNCTION_BLOCK FB_PumpStart\nVAR_INPUT Start : BOOL; Stop : BOOL; END_VAR\nVAR_OUTPUT Q : BOOL; END_VAR\nQ := Start AND NOT Stop;' },
+      { name: 'Surveillance Débit', code: 'IF Flow < MinFlow THEN\n  Alarm := TRUE;\nEND_IF;' }
     ]
   },
-  regulation: {
-    title: 'Régulation PID',
-    icon: 'ti-gauge',
-    color: 'regulation',
-    description: 'Algorithmes PID, anti-windup et régulation de processus',
+  regulation: { 
+    title: 'Régulation PID', 
+    icon: 'ti-gauge', 
     snippets: [
-      { name: 'PID Basique', code: 'error := Setpoint - ProcessValue;\nintegral := integral + error * CycleTime;\nderivative := (error - lastError) / CycleTime;\nOutput := Kp*error + Ki*integral + Kd*derivative;\nlastError := error;' },
-      { name: 'PID Anti-Windup', code: 'error := Setpoint - ProcessValue;\nIF ABS(Output) < OutputMax THEN\n  integral := integral + error * CycleTime;\nEND_IF;\nderivative := (error - lastError) / CycleTime;\nOutput := LIMIT(MinOut, Kp*error + Ki*integral + Kd*derivative, MaxOut);\nlastError := error;' }
+      { name: 'Structure PID', code: 'FUNCTION_BLOCK FB_PID\nVAR_INPUT SetPoint, ProcessVar : REAL; END_VAR\nVAR_OUTPUT Output : REAL; END_VAR\n// Logique PID ici' }
     ]
   },
-  safety: {
-    title: 'Sécurité & Alarmes',
-    icon: 'ti-shield',
-    color: 'safety',
-    description: 'Gestion des alarmes, acquittements et sécurités machines',
+  safety: { 
+    title: 'Sécurité & Alarmes', 
+    icon: 'ti-shield', 
     snippets: [
-      { name: 'Alarme avec Acquittement', code: 'IF AlarmCondition THEN\n  AlarmActive := TRUE;\n  AlarmTimestamp := TIMESTAMP();\nEND_IF;\nIF Acknowledge AND AlarmActive THEN\n  AlarmActive := FALSE;\n  AlarmAcked := TRUE;\nEND_IF;' },
-      { name: 'Arrêt d\'Urgence', code: 'IF EmergencyStop OR SafetyDoorOpen OR LightCurtainBroken THEN\n  MachineRunning := FALSE;\n  SafetyFault := TRUE;\n  MotorEnable := FALSE;\nEND_IF;' }
+      { name: 'Arrêt Urgence', code: 'IF EmergencyStop THEN\n  Motor_Q := FALSE;\n  Valve_Q := FALSE;\nEND_IF;' }
     ]
   },
-  motors: {
-    title: 'Moteurs & Variateurs',
-    icon: 'ti-motorbike',
-    color: 'motors',
-    description: 'Contrôle moteurs, variateurs de fréquence et protections',
+  motors: { 
+    title: 'Moteurs & Variateurs', 
+    icon: 'ti-motorbike', 
     snippets: [
-      { name: 'Démarrage Progressif', code: 'IF StartCommand THEN\n  FOR ramp := 0 TO 100 BY RampStep DO\n    MotorSpeed := ramp;\n    WAIT(RampTime / 100);\n  END_FOR;\nEND_IF;' },
-      { name: 'Protection Thermique', code: 'MotorTemp := ReadTempSensor();\nIF MotorTemp > MaxTemp THEN\n  MotorOverheat := TRUE;\n  MotorEnable := FALSE;\nELSIF MotorTemp > WarningTemp THEN\n  TempWarning := TRUE;\nELSE\n  TempWarning := FALSE;\nEND_IF;' }
+      { name: 'Contrôle Vitesse', code: 'Motor_Speed := Ref_Speed * Scale_Factor;' }
     ]
   },
-  hvac: {
-    title: 'Température & HVAC',
-    icon: 'ti-thermometer',
-    color: 'hvac',
-    description: 'Chauffage, ventilation, climatisation et contrôle température',
+  hvac: { 
+    title: 'Température & HVAC', 
+    icon: 'ti-thermometer', 
     snippets: [
-      { name: 'Régulation Température', code: 'TempError := SetTemp - ActualTemp;\nIF TempError > DeadBand THEN\n  HeatingValve := MIN(HeatingValve + Step, 100);\nELSIF TempError < -DeadBand THEN\n  HeatingValve := MAX(HeatingValve - Step, 0);\nEND_IF;' },
-      { name: 'Gestion VMC', code: 'IF CO2Level > CO2Max OR Humidity > HumidityMax THEN\n  VMCSpeed := HighSpeed;\nELSIF RoomOccupied THEN\n  VMCSpeed := NormalSpeed;\nELSE\n  VMCSpeed := LowSpeed;\nEND_IF;' }
+      { name: 'Thermostat', code: 'IF Temp < SetPoint - Hysteresis THEN Heater := TRUE;\nELSIF Temp > SetPoint + Hysteresis THEN Heater := FALSE;\nEND_IF;' }
     ]
   }
 };
 
-// Rendu des catégories de bibliothèque
 function renderLibraryCategories() {
-  const container = document.getElementById('libraryCategories');
-  if (!container) return;
+  const grid = document.getElementById('libraryGrid');
+  if(!grid) return;
   
-  let html = '';
-  for (const [key, cat] of Object.entries(EXTENDED_SCL_LIBRARY)) {
-    const snippetCount = cat.snippets.length;
-    html += `\n        <div class="feature-card" onclick="showLibrarySnippets('${key}')">\n          <div class="feature-icon ${cat.color}"><i class="ti ${cat.icon}"></i></div>\n          <div class="feature-title">${cat.title}</div>\n          <div class="feature-desc">${cat.description}</div>\n          <div class="snippet-count">${snippetCount} snippet${snippetCount > 1 ? 's' : ''}</div>\n        </div>`;
+  grid.innerHTML = '';
+  
+  for(const [key, cat] of Object.entries(EXTENDED_SCL_LIBRARY)) {
+    const card = document.createElement('div');
+    card.className = 'feature-card';
+    card.innerHTML = `
+      <i class="ti ${cat.icon}"></i>
+      <h3>${cat.title}</h3>
+      <p>${cat.snippets.length} snippets disponibles</p>
+    `;
+    card.onclick = () => showSnippets(key);
+    grid.appendChild(card);
   }
-  container.innerHTML = html;
 }
 
-// Affichage des snippets d'une catégorie
-function showLibrarySnippets(category) {
-  const cat = EXTENDED_SCL_LIBRARY[category];
-  if (!cat) return;
+function showSnippets(categoryKey) {
+  const cat = EXTENDED_SCL_LIBRARY[categoryKey];
+  if(!cat) return;
   
-  const container = document.getElementById('librarySnippets');
-  if (!container) return;
-  
-  let html = `<h3 style="padding:16px;font-size:16px;color:var(--blue-400)">${cat.title}</h3>\n<div class="feature-grid">`;
-  cat.snippets.forEach((snip, idx) => {
-    html += `\n  <div class="feature-card" onclick="copySnippet('${category}', ${idx})">\n    <div class="feature-title">${snip.name}</div>\n    <pre style="font-size:11px;margin-top:8px;background:var(--bg-tertiary);padding:8px;border-radius:4px;overflow-x:auto">${escapeHtml(snip.code)}</pre>\n    <div class="snippet-count"><i class="ti ti-copy"></i> Cliquer pour copier</div>\n  </div>`;
-  });
-  html += '\n</div>';
-  
-  container.innerHTML = html;
-  
-  // Switch to snippets tab
-  switchTab('library', 'snippets');
+  switchPanel('chat');
+  const snippetText = cat.snippets.map(s => `// ${s.name}\n${s.code}`).join('\n\n');
+  document.getElementById('userInput').value = `Voici des exemples pour ${cat.title}:\n\n${snippetText}\n\nPeux-tu m'expliquer comment les intégrer?`;
+  showToast(`Catégorie ${cat.title} chargée`, 'info');
 }
 
-// Copie d'un snippet
-function copySnippet(category, index) {
-  const snip = EXTENDED_SCL_LIBRARY[category].snippets[index];
-  navigator.clipboard.writeText(snip.code).then(() => {
-    showToast(`Snippet "${snip.name}" copié !`, 'success');
-  }).catch(() => {
-    showToast('Erreur copie', 'error');
-  });
-}
-
-// Validateur SCL Avancé
+// --- Validator System ---
 class SCLValidator {
   constructor() {
-    this.rules = [];
-    this.initializeRules();
-  }
-  
-  initializeRules() {
     this.rules = [
-      { id: 'STRUCT_001', name: 'Déclaration FUNCTION', pattern: /FUNCTION\s+\w+:/, type: 'error', message: 'Fonction non déclarée correctement' },
-      { id: 'STRUCT_002', name: 'Correspondance END_FUNCTION', pattern: /END_FUNCTION/, type: 'error', message: 'END_FUNCTION manquant' },
-      { id: 'STRUCT_003', name: 'Déclaration VAR', pattern: /VAR(?:_INPUT|_OUTPUT|_IN_OUT|_LOCAL)?\s*:/, type: 'info', message: 'Section VAR détectée' },
-      { id: 'STRUCT_004', name: 'IF/END_IF', pattern: /IF\s+.+THEN/, type: 'error', message: 'Structure IF incomplète' },
-      { id: 'STRUCT_005', name: 'CASE/END_CASE', pattern: /CASE\s+\w+\s+OF/, type: 'warning', message: 'Vérifier END_CASE' },
-      { id: 'TYPE_001', name: 'Types de données', pattern: /\b(?:BOOL|BYTE|WORD|DWORD|INT|DINT|REAL|STRING|TIME)\b/, type: 'info', message: 'Type standard utilisé' },
-      { id: 'TYPE_002', name: 'ARRAY declaration', pattern: /ARRAY\s*\[\d+\.\.\d+\]\s+OF/, type: 'info', message: 'Tableau déclaré' },
-      { id: 'LOGIC_001', name: 'Division par zéro', pattern: /\/\s*0(?:\.0)?(?!\d)/, type: 'error', message: 'Risque de division par zéro' },
-      { id: 'LOGIC_002', name: 'Comparaison BOOL', pattern: /=\s*(?:TRUE|FALSE)/, type: 'warning', message: 'Préférer NOT ou directement la variable BOOL' },
-      { id: 'TIME_001', name: 'Format TIME', pattern: /T#\d+(?:[smhd]|MS)/, type: 'info', message: 'Constante TIME valide' },
-      { id: 'TIME_002', name: 'TIME invalide', pattern: /T#[^0-9]/, type: 'error', message: 'Format TIME incorrect' },
-      { id: 'STYLE_001', name: 'Variables inutilisées', pattern: null, type: 'warning', message: 'Variable déclarée mais non utilisée (analyse manuelle)' },
-      { id: 'STYLE_002', name: 'Commentaires', pattern: /\/\/.*|\/\*[\s\S]*?\*\//, type: 'info', message: 'Bonnes pratiques de commentaire' },
-      { id: 'FUNC_001', name: 'Appel fonction', pattern: /\w+\([^)]*\)(?!\s*;)/, type: 'info', message: 'Appel de fonction détecté' },
-      { id: 'LIMIT_001', name: 'LIMIT function', pattern: /LIMIT\s*\(/, type: 'info', message: 'Fonction LIMIT utilisée' }
+      { id: 'STRUCT_001', pattern: /FUNCTION\s+\w+:/i, type: 'error', msg: 'Déclaration FUNCTION manquante ou invalide' },
+      { id: 'STRUCT_002', pattern: /END_FUNCTION/i, type: 'error', msg: 'END_FUNCTION manquant' },
+      { id: 'VAR_001', pattern: /VAR_INPUT|VAR_OUTPUT|VAR_IN_OUT|VAR/i, type: 'info', msg: 'Section de variables détectée' },
+      { id: 'LOGIC_001', pattern: /\/\s*0(?:\.0)?(?!\d)/, type: 'error', msg: 'Division par zéro détectée!' },
+      { id: 'TIME_001', pattern: /T#[0-9]+(?:MS|S|M|H|D)/i, type: 'success', msg: 'Format TIME correct' },
+      { id: 'TIME_002', pattern: /T#[^0-9]/i, type: 'error', msg: 'Format TIME invalide (doit commencer par un chiffre)' },
+      { id: 'SYNTAX_001', pattern: /:=/i, type: 'info', msg: 'Assignation SCL correcte (:=)' },
+      { id: 'SYNTAX_002', pattern: /=\s*[^=]/i, type: 'warning', msg: 'Utilisation de "=" au lieu de ":=" pour l\'assignation?' },
+      { id: 'COMMENT_001', pattern: /\(\*[\s\S]*?\*\)/, type: 'info', msg: 'Commentaires présents' },
+      { id: 'LOOP_001', pattern: /FOR\s+\w+\s+:=/i, type: 'info', msg: 'Boucle FOR détectée' },
+      { id: 'LOOP_002', pattern: /END_FOR/i, type: 'error', msg: 'END_FOR manquant pour une boucle FOR' },
+      { id: 'COND_001', pattern: /IF\s+.+THEN/i, type: 'info', msg: 'Condition IF détectée' },
+      { id: 'COND_002', pattern: /END_IF/i, type: 'error', msg: 'END_IF manquant' },
+      { id: 'CASE_001', pattern: /CASE\s+\w+\s+OF/i, type: 'info', msg: 'Instruction CASE détectée' },
+      { id: 'CASE_002', pattern: /END_CASE/i, type: 'error', msg: 'END_CASE manquant' }
     ];
   }
-  
+
   validate(code) {
-    const results = { errors: [], warnings: [], info: [], score: 100 };
+    const results = [];
+    let score = 100;
     
     this.rules.forEach(rule => {
-      if (!rule.pattern) return;
-      
       const matches = code.match(rule.pattern);
-      if (rule.type === 'error' && !matches) {
-        results.errors.push({ rule: rule.id, message: rule.message });
-        results.score -= 15;
-      } else if (rule.type === 'error' && matches && rule.id === 'LOGIC_001') {
-        results.errors.push({ rule: rule.id, message: rule.message });
-        results.score -= 20;
-      } else if (rule.type === 'warning' && matches) {
-        results.warnings.push({ rule: rule.id, message: rule.message });
-        results.score -= 5;
-      } else if (rule.type === 'info' && matches) {
-        results.info.push({ rule: rule.id, message: rule.message });
+      if(matches) {
+        if(rule.type === 'error') score -= 15;
+        if(rule.type === 'warning') score -= 5;
+        
+        results.push({
+          rule: rule.id,
+          type: rule.type,
+          message: rule.msg,
+          context: matches[0]
+        });
+      } else if (rule.type === 'error' && (rule.id.includes('STRUCT') || rule.id.includes('END'))) {
+         // Check specifically for missing end blocks if start exists
+         if(rule.id === 'STRUCT_002' && /FUNCTION/i.test(code) && !/END_FUNCTION/i.test(code)) {
+            results.push({ rule: rule.id, type: 'error', message: 'END_FUNCTION manquant' });
+            score -= 15;
+         }
       }
     });
     
-    results.score = Math.max(0, Math.min(100, results.score));
-    return results;
+    return { score: Math.max(0, score), results };
   }
 }
 
-// Exécution du validateur
-function runValidator() {
-  const code = document.getElementById('validatorCode').value;
-  const resultsDiv = document.getElementById('validatorResults');
+function runStandaloneValidator() {
+  const code = document.getElementById('validatorInput').value;
+  const resultDiv = document.getElementById('validatorResults');
   
-  if (!code.trim()) {
-    resultsDiv.innerHTML = '<div class="alert error"><i class="ti ti-alert-triangle"></i><div>Veuillez coller du code SCL à analyser</div></div>';
+  if(!code.trim()) {
+    resultDiv.innerHTML = '<div class="result-item error">Veuillez entrer du code SCL.</div>';
     return;
   }
   
   const validator = new SCLValidator();
-  const results = validator.validate(code);
+  const result = validator.validate(code);
   
-  let html = `<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">`;
-  const scoreClass = results.score >= 80 ? 'score-good' : (results.score >= 60 ? 'score-warning' : 'score-bad');
-  html += `<div class="analysis-score ${scoreClass}">${results.score}/100</div>`;
-  html += `<div style="font-size:13px;color:var(--text-secondary)">${results.errors.length} erreur(s), ${results.warnings.length} avertissement(s), ${results.info.length} info(s)</div>`;
-  html += `</div>`;
+  let html = `<div class="result-score">Score: ${result.score}/100</div>`;
   
-  if (results.errors.length > 0) {
-    html += '<div class="doc-title" style="color:var(--coral-400);margin-top:12px">Erreurs</div><ul class="issue-list">';
-    results.errors.forEach(err => {
-      html += `<li class="issue-item issue-error"><i class="ti ti-x issue-icon"></i><div>[${err.rule}] ${err.message}</div></li>`;
+  if(result.results.length === 0) {
+    html += '<div class="result-item success">Aucune erreur majeure détectée. Structure valide.</div>';
+  } else {
+    result.results.forEach(r => {
+      html += `
+        <div class="result-item ${r.type}">
+          <div class="result-title">
+            <span>${r.rule}</span>
+            <span style="text-transform:uppercase; font-size:11px;">${r.type}</span>
+          </div>
+          <div>${r.message}</div>
+          ${r.context ? `<small style="color:#666; display:block; margin-top:5px; font-family:monospace;">"${r.context}"</small>` : ''}
+        </div>
+      `;
     });
-    html += '</ul>';
   }
   
-  if (results.warnings.length > 0) {
-    html += '<div class="doc-title" style="color:var(--amber-400);margin-top:12px">Avertissements</div><ul class="issue-list">';
-    results.warnings.forEach(warn => {
-      html += `<li class="issue-item issue-warning"><i class="ti ti-alert-triangle issue-icon"></i><div>[${warn.rule}] ${warn.message}</div></li>`;
-    });
-    html += '</ul>';
-  }
-  
-  if (results.info.length > 0) {
-    html += '<div class="doc-title" style="color:var(--blue-400);margin-top:12px">Informations</div><ul class="issue-list">';
-    results.info.forEach(info => {
-      html += `<li class="issue-item issue-info"><i class="ti ti-info-circle issue-icon"></i><div>[${info.rule}] ${info.message}</div></li>`;
-    });
-    html += '</ul>';
-  }
-  
-  resultsDiv.innerHTML = html;
+  resultDiv.innerHTML = html;
 }
 
-// Optimiseur de Code SCL
+// --- Optimizer System ---
 class SCLOptimizer {
   analyze(code) {
     const suggestions = [];
     
-    // Détection IF imbriqués
-    const nestedIf = (code.match(/IF\s+.+THEN[\s\S]*?IF\s+.+THEN/g) || []).length;
-    if (nestedIf > 0) {
+    // Detect Nested IFs
+    const ifCount = (code.match(/IF\s+/gi) || []).length;
+    if(ifCount > 2) {
       suggestions.push({
         type: 'optimization',
         title: 'Conditions imbriquées',
-        before: 'IF condition1 THEN\n  IF condition2 THEN\n    action;\n  END_IF;\nEND_IF;',
-        after: 'IF condition1 AND condition2 THEN\n  action;\nEND_IF;',
-        gain: 'Réduction de la complexité cyclomatique'
+        desc: 'Plusieurs IF détectés. Envisagez d\'utiliser AND/OR ou un CASE.',
+        before: 'IF A THEN\n  IF B THEN...',
+        after: 'IF A AND B THEN...'
       });
     }
     
-    // Calculs redondants
-    const redundantCalc = code.match(/(\w+)\s*:=\s*\1\s*[+\-*\/]\s*\d+/g);
-    if (redundantCalc) {
-      suggestions.push({
-        type: 'performance',
-        title: 'Calculs redondants détectés',
-        description: 'Certaines variables sont recalculées inutilement',
-        code: redundantCalc.join('\n')
-      });
-    }
-    
-    // Assignations multiples
-    const multiAssign = (code.match(/:=\s*TRUE/g) || []).length + (code.match(/:=\s*FALSE/g) || []).length;
-    if (multiAssign > 5) {
-      suggestions.push({
-        type: 'refactoring',
-        title: 'Multiples assignations BOOL',
-        description: `Trouvé ${multiAssign} assignations TRUE/FALSE. Envisager un bloc de reset/set groupé.`,
-        gain: 'Meilleure lisibilité'
-      });
-    }
-    
-    // Constantes magiques
-    const magicNumbers = code.match(/:=\s*\d{2,}(?!\d)/g) || [];
-    if (magicNumbers.length > 0) {
+    // Detect Magic Numbers
+    const numbers = code.match(/\b\d+(?:\.\d+)?\b/g) || [];
+    const uniqueNumbers = [...new Set(numbers)].filter(n => n !== '0' && n !== '1');
+    if(uniqueNumbers.length > 2) {
       suggestions.push({
         type: 'best-practice',
         title: 'Constantes magiques',
-        description: 'Remplacer les nombres en dur par des constantes nommées',
-        code: magicNumbers.slice(0, 3).join('\n') + (magicNumbers.length > 3 ? '\n...' : '')
+        desc: `Nombres en dur détectés: ${uniqueNumbers.join(', ')}. Utilisez des CONSTANTes.`,
+        before: 'IF Temp > 85.5 THEN...',
+        after: 'CONSTANT MAX_TEMP : REAL := 85.5;\nIF Temp > MAX_TEMP THEN...'
+      });
+    }
+    
+    // Detect Redundant Assignments
+    if(/:=\s*TRUE.*:=\s*FALSE/s.test(code) || /:=\s*FALSE.*:=\s*TRUE/s.test(code)) {
+       suggestions.push({
+        type: 'logic',
+        title: 'Assignations contradictoires',
+        desc: 'La même variable semble être mise à TRUE puis FALSE (ou inversement) dans le même bloc.',
+        before: 'Q := TRUE;\n...\nQ := FALSE;',
+        after: 'Vérifiez la logique conditionnelle.'
+      });
+    }
+    
+    if(suggestions.length === 0) {
+      suggestions.push({
+        type: 'success',
+        title: 'Code propre',
+        desc: 'Aucune optimisation évidente détectée automatiquement.'
       });
     }
     
@@ -2888,173 +728,207 @@ class SCLOptimizer {
   }
 }
 
-// Exécution de l'optimiseur
-function runOptimizer() {
-  const code = document.getElementById('optimizerCode').value;
-  const resultsDiv = document.getElementById('optimizerResults');
+function runStandaloneOptimizer() {
+  const code = document.getElementById('optimizerInput').value;
+  const resultDiv = document.getElementById('optimizerResults');
   
-  if (!code.trim()) {
-    resultsDiv.innerHTML = '<div class="alert error"><i class="ti ti-alert-triangle"></i><div>Veuillez coller du code SCL à optimiser</div></div>';
+  if(!code.trim()) {
+    resultDiv.innerHTML = '<div class="result-item error">Veuillez entrer du code SCL.</div>';
     return;
   }
   
   const optimizer = new SCLOptimizer();
   const suggestions = optimizer.analyze(code);
   
-  if (suggestions.length === 0) {
-    resultsDiv.innerHTML = '<div class="alert success"><i class="ti ti-check"></i><div>Aucune optimisation majeure détectée. Le code semble bien structuré.</div></div>';
-    return;
-  }
-  
-  let html = `<div class="doc-title" style="margin-bottom:12px">${suggestions.length} suggestion(s) d'optimisation</div>`;
-  
-  suggestions.forEach((sug, idx) => {
-    html += `\n<div class="feature-card" style="margin-bottom:12px">`;
-    html += `<div class="feature-title">${sug.title}</div>`;
-    html += `<div style="font-size:12px;color:var(--text-secondary);margin:4px 0">${sug.description || sug.gain || ''}</div>`;
+  let html = '<h3>Suggestions d\'optimisation</h3>';
+  suggestions.forEach(s => {
+    let icon = s.type === 'success' ? 'ti-check' : 'ti-wand';
+    let color = s.type === 'success' ? 'success' : 'info';
     
-    if (sug.before) {
-      html += `\n<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">`;
-      html += `<div><div style="font-size:11px;color:var(--coral-400);margin-bottom:4px">Avant:</div><pre style="font-size:11px;background:var(--coral-50);padding:8px;border-radius:4px;overflow-x:auto">${escapeHtml(sug.before)}</pre></div>`;
-      html += `<div><div style="font-size:11px;color:var(--teal-400);margin-bottom:4px">Après:</div><pre style="font-size:11px;background:var(--teal-50);padding:8px;border-radius:4px;overflow-x:auto">${escapeHtml(sug.after)}</pre></div>`;
-      html += `</div>`;
-    }
-    
-    if (sug.code) {
-      html += `<pre style="font-size:11px;background:var(--bg-tertiary);padding:8px;border-radius:4px;margin-top:8px;overflow-x:auto">${escapeHtml(sug.code)}</pre>`;
-    }
-    
-    html += `</div>`;
+    html += `
+      <div class="result-item ${color}">
+        <div class="result-title"><i class="ti ${icon}"></i> ${s.title}</div>
+        <p>${s.desc}</p>
+        ${s.before ? `<pre style="font-size:11px; margin-top:5px;">// Avant:\n${s.before}\n\n// Après:\n${s.after || ''}</pre>` : ''}
+      </div>
+    `;
   });
   
-  resultsDiv.innerHTML = html;
+  resultDiv.innerHTML = html;
 }
 
-// Générateur de Documentation
+// --- Documentation Generator ---
 class DocGenerator {
   generate(code) {
-    const doc = {
-      name: 'Bloc Inconnu',
-      inputs: [],
-      outputs: [],
-      inouts: [],
-      locals: [],
-      algorithm: []
-    };
+    const nameMatch = code.match(/FUNCTION(?:_BLOCK)?\s+(\w+):/i);
+    const name = nameMatch ? nameMatch[1] : 'Inconnu';
     
-    // Extraction du nom
-    const nameMatch = code.match(/FUNCTION(?:_BLOCK)?\s+(\w+):/);
-    if (nameMatch) doc.name = nameMatch[1];
+    const inputs = [];
+    const outputs = [];
+    const inouts = [];
+    const vars = [];
     
-    // Extraction des variables
-    const varSections = {
-      inputs: /VAR_INPUT([\s\S]*?)END_VAR/i,
-      outputs: /VAR_OUTPUT([\s\S]*?)END_VAR/i,
-      inouts: /VAR_IN_OUT([\s\S]*?)END_VAR/i,
-      locals: /VAR(?:_LOCAL)?([\s\S]*?)END_VAR/i
-    };
+    // Simple parsing
+    let currentSection = '';
+    const lines = code.split('\n');
     
-    for (const [type, pattern] of Object.entries(varSections)) {
-      const match = code.match(pattern);
-      if (match) {
-        const lines = match[1].split('\n');
-        lines.forEach(line => {
-          const trimmed = line.trim();
-          if (trimmed && !trimmed.startsWith('//')) {
-            const parts = trimmed.split(':');
-            if (parts.length >= 2) {
-              const names = parts[0].trim().split(',');
-              const dtype = parts[1].trim().split(';')[0];
-              names.forEach(name => {
-                if (name.trim()) {
-                  doc[type].push({ name: name.trim(), type: dtype });
-                }
-              });
-            }
-          }
-        });
+    lines.forEach(line => {
+      if(/VAR_INPUT/i.test(line)) currentSection = 'input';
+      else if(/VAR_OUTPUT/i.test(line)) currentSection = 'output';
+      else if(/VAR_IN_OUT/i.test(line)) currentSection = 'inout';
+      else if(/VAR\s/i.test(line) || /VAR_LOCAL/i.test(line)) currentSection = 'local';
+      else if(/END_VAR/i.test(line)) currentSection = '';
+      else if(currentSection && line.includes(':')) {
+        const parts = line.split(':');
+        const varName = parts[0].trim();
+        const varType = parts[1].split(';')[0].trim();
+        if(varName) {
+          const obj = { name: varName, type: varType };
+          if(currentSection === 'input') inputs.push(obj);
+          if(currentSection === 'output') outputs.push(obj);
+          if(currentSection === 'inout') inouts.push(obj);
+          if(currentSection === 'local') vars.push(obj);
+        }
       }
-    }
+    });
     
-    // Extraction algorithme (simplifié)
-    const algoMatch = code.match(/BEGIN([\s\S]*)/);
-    if (algoMatch) {
-      doc.algorithm = algoMatch[1].trim().split('\n').slice(0, 10);
-    }
-    
-    return doc;
+    return {
+      name,
+      inputs,
+      outputs,
+      inouts,
+      localVars: vars,
+      description: `Bloc SCL généré automatiquement.`
+    };
   }
 }
 
-// Génération de documentation
-function generateDocumentation() {
-  const code = document.getElementById('docCode').value;
-  const resultsDiv = document.getElementById('documentationResults');
+function runStandaloneDocGenerator() {
+  const code = document.getElementById('docInput').value;
+  const resultDiv = document.getElementById('docResults');
   
-  if (!code.trim()) {
-    resultsDiv.innerHTML = '<div class="alert error"><i class="ti ti-alert-triangle"></i><div>Veuillez coller du code SCL à documenter</div></div>';
+  if(!code.trim()) {
+    resultDiv.innerHTML = '<div class="result-item error">Veuillez entrer du code SCL.</div>';
     return;
   }
   
-  const generator = new DocGenerator();
-  const doc = generator.generate(code);
+  const gen = new DocGenerator();
+  const doc = gen.generate(code);
   
-  let html = `<div class="doc-panel">`;
-  html += `<div class="doc-section"><div class="doc-title">${doc.name}</div></div>`;
+  let html = `
+    <div class="result-item info">
+      <h2>Fonction: ${doc.name}</h2>
+      <p>${doc.description}</p>
+    </div>
+    
+    <h3>Entrées (INPUT)</h3>
+    ${doc.inputs.length ? '<table style="width:100%; border-collapse:collapse; font-size:13px;"><tr style="background:#eee;"><th style="padding:8px; text-align:left;">Nom</th><th>Type</th></tr>' + doc.inputs.map(i => `<tr><td style="padding:8px; border-bottom:1px solid #ddd;">${i.name}</td><td style="padding:8px; border-bottom:1px solid #ddd;">${i.type}</td></tr>`).join('') + '</table>' : '<p>Aucune entrée.</p>'}
+    
+    <h3 style="margin-top:20px;">Sorties (OUTPUT)</h3>
+    ${doc.outputs.length ? '<table style="width:100%; border-collapse:collapse; font-size:13px;"><tr style="background:#eee;"><th style="padding:8px; text-align:left;">Nom</th><th>Type</th></tr>' + doc.outputs.map(i => `<tr><td style="padding:8px; border-bottom:1px solid #ddd;">${i.name}</td><td style="padding:8px; border-bottom:1px solid #ddd;">${i.type}</td></tr>`).join('') + '</table>' : '<p>Aucune sortie.</p>'}
+    
+    <h3 style="margin-top:20px;">Variables Locales</h3>
+    ${doc.localVars.length ? '<ul>' + doc.localVars.map(v => `<li><b>${v.name}</b> : ${v.type}</li>`).join('') + '</ul>' : '<p>Aucune variable locale.</p>'}
+  `;
   
-  // Variables table
-  html += `<div class="doc-section"><div class="doc-title">Variables</div>`;
-  html += `<table class="doc-var-table"><thead><tr><th>Nom</th><th>Type</th><th>Catégorie</th></tr></thead><tbody>`;
+  resultDiv.innerHTML = html;
+}
+
+// --- Test All Modules Function ---
+function testAllModules() {
+  const testCode = `FUNCTION Test_Module : BOOL
+VAR_INPUT 
+  Start : BOOL;
+  Speed : REAL := 150.5;
+END_VAR
+VAR_OUTPUT
+  Running : BOOL;
+END_VAR
+BEGIN
+  IF Start THEN
+    IF Speed > 100.0 THEN
+      Running := TRUE;
+    ELSE
+      Running := FALSE;
+    END_IF;
+  ELSE
+    Running := FALSE;
+  END_IF;
   
-  const allVars = [
-    ...doc.inputs.map(v => ({...v, cat: 'INPUT'})),
-    ...doc.outputs.map(v => ({...v, cat: 'OUTPUT'})),
-    ...doc.inouts.map(v => ({...v, cat: 'IN_OUT'})),
-    ...doc.locals.map(v => ({...v, cat: 'LOCAL'}))
+  // Division dangereuse
+  Test_Module := Speed / 0; 
+  
+END_FUNCTION`;
+
+  // Fill inputs
+  document.getElementById('validatorInput').value = testCode;
+  document.getElementById('optimizerInput').value = testCode;
+  document.getElementById('docInput').value = testCode;
+  
+  // Run tests
+  runStandaloneValidator();
+  runStandaloneOptimizer();
+  runStandaloneDocGenerator();
+  
+  // Switch to validator tab to show result
+  switchPanel('validator');
+  showToast('Tests exécutés avec code exemple. Vérifiez les onglets.', 'success');
+  console.log("🧪 Tests lancés. Voir résultats dans les panneaux.");
+}
+
+// --- GLOBAL FIX: Force Event Binding & Error Handling ---
+(function() {
+  console.log("🔧 Initialisation forcée des événements globaux...");
+
+  // Exposer explicitement les fonctions critiques dans window pour les onclick HTML
+  const criticalFunctions = [
+    'sendMessage', 'toggleSidebar', 'switchPanel', 'openConfig', 'closeConfig', 
+    'saveConfig', 'exportConversation', 'clearConversation', 'copyCode',
+    'runStandaloneValidator', 'runStandaloneOptimizer', 'runStandaloneDocGenerator', 
+    'testAllModules', 'showSnippets'
   ];
-  
-  if (allVars.length === 0) {
-    html += `<tr><td colspan="3" style="text-align:center;color:var(--text-tertiary)">Aucune variable détectée</td></tr>`;
-  } else {
-    allVars.forEach(v => {
-      const catClass = `var-${v.cat.toLowerCase().replace('_', '-')}`;
-      html += `<tr><td><code>${v.name}</code></td><td>${v.type}</td><td><span class="${catClass}">${v.cat}</span></td></tr>`;
-    });
-  }
-  
-  html += `</tbody></table></div>`;
-  
-  // Algorithme
-  if (doc.algorithm.length > 0) {
-    html += `<div class="doc-section"><div class="doc-title">Algorithme (extrait)</div>`;
-    html += `<pre style="background:var(--bg-tertiary);padding:12px;border-radius:4px;overflow-x:auto;font-size:12px">${escapeHtml(doc.algorithm.join('\n'))}</pre></div>`;
-  }
-  
-  // Exemple d'utilisation
-  html += `<div class="doc-section"><div class="doc-title">Exemple d'appel</div>`;
-  html += `<pre style="background:var(--blue-50);padding:12px;border-radius:4px;overflow-x:auto;font-size:12px">${doc.name}(</pre>`;
-  allVars.slice(0, 5).forEach((v, i) => {
-    html += `<pre style="background:var(--blue-50);padding:12px;border-radius:4px;overflow-x:auto;font-size:12px">  ${v.name} := ${v.type === 'BOOL' ? 'FALSE' : '0'},</pre>`;
+
+  criticalFunctions.forEach(funcName => {
+    if (typeof window[funcName] === 'undefined') {
+      console.warn(`⚠️ Fonction globale manquante : ${funcName}`);
+    } else {
+      console.log(`✅ Fonction exposée : ${funcName}`);
+    }
   });
-  html += `<pre style="background:var(--blue-50);padding:12px;border-radius:4px;overflow-x:auto;font-size:12px">);</pre></div>`;
-  
-  html += `</div>`;
-  
-  resultsDiv.innerHTML = html;
-}
 
-// Toast notifications
-function showToast(message, type = 'info') {
-  const toast = document.createElement('div');
-  toast.style.cssText = `position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:6px;background:${type === 'success' ? 'var(--teal-50)' : (type === 'error' ? 'var(--coral-50)' : 'var(--blue-50)')};border:0.5px solid ${type === 'success' ? 'var(--teal-400)' : (type === 'error' ? 'var(--coral-400)' : 'var(--blue-400)')};color:${type === 'success' ? 'var(--teal-800)' : (type === 'error' ? 'var(--coral-800)' : 'var(--blue-800)')};font-size:13px;z-index:10000;animation:slideIn 0.3s ease`;
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
-}
-
-console.log('%c🚀 SCL SuperAgent Pro initialisé', 'color: #378ADD; font-size: 16px; font-weight: bold');
-console.log('%cVersion: 2.1 Pro+ | Bibliothèque Étendue, Validateur, Optimiseur, Documentation', 'color: #5F5E5A');
+  // Gestion robuste des erreurs non capturées
+  window.onerror = function(msg, url, line, col, error) {
+    console.error(`❌ Erreur Globale : ${msg}`);
+    console.error(`   Ligne: ${line}, Colonne: ${col}`);
+    // Afficher un toast d'erreur critique
+    const toastContainer = document.getElementById('toastContainer');
+    if(toastContainer) {
+      const toast = document.createElement('div');
+      toast.className = 'toast error';
+      toast.innerHTML = `<i class="ti ti-alert-circle"></i> <span>Erreur JS: ${msg.substring(0, 50)}...</span>`;
+      toastContainer.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+    return false;
+  };
+  
+  // Fallback si DOMContentLoaded a été manqué
+  if(document.readyState === 'complete') {
+     console.log("🔄 Re-triggering init logic...");
+     // Ré-initialiser le slider si nécessaire
+     const slider = document.getElementById('maxTokensSlider');
+     if(slider && !slider.hasAttribute('listener-added')) {
+        slider.addEventListener('input', function() {
+          const val = parseInt(this.value);
+          document.getElementById('maxTokensValue').textContent = val;
+          config.maxTokens = val;
+          localStorage.setItem('mistral_max_tokens', val.toString());
+        });
+        slider.setAttribute('listener-added', 'true');
+     }
+     renderLibraryCategories();
+  }
+})();
 </script>
-
 </body>
 </html>
