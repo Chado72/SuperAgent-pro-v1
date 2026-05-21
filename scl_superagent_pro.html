@@ -1018,12 +1018,12 @@ function addMessage(content, role, meta = '') {
   // Formater le contenu avec les blocs de code
   const formattedContent = formatCodeBlocks(content);
   
-  msgDiv.innerHTML = `
-    <div class="msg-avatar ${avatarClass}">${avatar}</div>
+  msgDiv.innerHTML = safeHTML(`
+    <div class="msg-avatar ${avatarClass}">${escapeHtml(avatar)}</div>
     <div class="msg-content">
       <div class="msg-bubble">${formattedContent}</div>
       <div class="msg-meta">
-        ${metaText}
+        ${escapeHtml(metaText)}
         ${role === 'agent' ? '<span class="quality-badge"><i class="ti ti-check"></i> Validé</span>' : ''}
       </div>
       <div class="msg-actions">
@@ -1040,7 +1040,7 @@ function addMessage(content, role, meta = '') {
         ` : ''}
       </div>
     </div>
-  `;
+  `);
   
   messagesDiv.appendChild(msgDiv);
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -1078,9 +1078,29 @@ function formatCodeBlocks(text) {
 }
 
 function escapeHtml(text) {
+  if (!text) return '';
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+// Fonction de sanitization pour innerHTML
+function sanitizeHTML(html) {
+  if (!html) return '';
+  // Échapper les caractères spéciaux HTML
+  const temp = document.createElement('div');
+  temp.textContent = html;
+  return temp.innerHTML;
+}
+
+// Sanitization légère qui préserve les balises sûres (pour le formatage de code)
+function safeHTML(html) {
+  if (!html) return '';
+  // Supprimer les scripts et événements dangereux
+  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  sanitized = sanitized.replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '');
+  sanitized = sanitized.replace(/\son\w+\s*=\s*[^\s>]*/gi, '');
+  return sanitized;
 }
 
 function addTypingIndicator() {
@@ -1089,7 +1109,7 @@ function addTypingIndicator() {
   msgDiv.className = 'msg';
   msgDiv.id = 'typing-indicator';
   
-  msgDiv.innerHTML = `
+  msgDiv.innerHTML = safeHTML(`
     <div class="msg-avatar agent">IA</div>
     <div class="msg-content">
       <div class="msg-bubble">
@@ -1100,7 +1120,7 @@ function addTypingIndicator() {
         </div>
       </div>
     </div>
-  `;
+  `);
   
   messagesDiv.appendChild(msgDiv);
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -1278,7 +1298,7 @@ async function sendMessageStreaming(userMessage) {
               messageDiv = addMessage(fullMessage, 'agent', 'SCL en cours...');
             } else {
               const bubble = messageDiv.querySelector('.msg-bubble');
-              bubble.innerHTML = formatCodeBlocks(fullMessage);
+              bubble.innerHTML = safeHTML(formatCodeBlocks(fullMessage));
             }
           }
         } catch (e) {
@@ -1297,7 +1317,7 @@ async function sendMessageStreaming(userMessage) {
   // Mettre à jour les métadonnées
   if (messageDiv) {
     const meta = messageDiv.querySelector('.msg-meta');
-    meta.innerHTML = 'SCL généré <span class="quality-badge"><i class="ti ti-check"></i> Validé</span>';
+    meta.innerHTML = safeHTML('SCL généré <span class="quality-badge"><i class="ti ti-check"></i> Validé</span>');
   }
   
   // Cache
@@ -1323,13 +1343,13 @@ async function analyzeCode(codeText) {
   if (!config.enableValidation) return;
   
   const reviewContent = document.getElementById('reviewContent');
-  reviewContent.innerHTML = '<div class="alert info"><i class="ti ti-loader"></i><div>Analyse en cours...</div></div>';
+  reviewContent.innerHTML = safeHTML('<div class="alert info"><i class="ti ti-loader"></i><div>Analyse en cours...</div></div>');
   
   try {
     // Extraire le code SCL
     const codeMatch = codeText.match(/```(?:scl|SCL)?\n([\s\S]+?)\n```/);
     if (!codeMatch) {
-      reviewContent.innerHTML = '<div class="alert info"><i class="ti ti-info-circle"></i><div>Aucun code à analyser</div></div>';
+      reviewContent.innerHTML = safeHTML('<div class="alert info"><i class="ti ti-info-circle"></i><div>Aucun code à analyser</div></div>');
       return;
     }
     
@@ -1343,7 +1363,7 @@ async function analyzeCode(codeText) {
     
   } catch (error) {
     console.error('Erreur analyse:', error);
-    reviewContent.innerHTML = '<div class="alert error"><i class="ti ti-alert-triangle"></i><div>Erreur lors de l\'analyse</div></div>';
+    reviewContent.innerHTML = safeHTML('<div class="alert error"><i class="ti ti-alert-triangle"></i><div>Erreur lors de l\'analyse</div></div>');
   }
 }
 
@@ -1352,54 +1372,71 @@ function performStaticAnalysis(code) {
     errors: [],
     warnings: [],
     suggestions: [],
-    metrics: {
-      lines: code.split('\n').length,
-      variables: 0,
-      complexity: 0
-    }
+    metrics: { lines: code.split('\n').length, variables: 0, complexity: 0, functions: 0, commentLines: 0 }
   };
-  
-  // Vérifications basiques
+
+  // Vérifications de structure SCL
   if (!code.includes('FUNCTION') && !code.includes('FUNCTION_BLOCK')) {
-    analysis.warnings.push('Aucune déclaration FUNCTION ou FUNCTION_BLOCK trouvée');
+    analysis.errors.push('Aucune déclaration FUNCTION ou FUNCTION_BLOCK trouvée');
   }
-  
   if (!code.includes('END_FUNCTION') && !code.includes('END_FUNCTION_BLOCK')) {
-    analysis.errors.push('Bloc non fermé : END_FUNCTION manquant');
+    analysis.errors.push('Bloc non fermé : END_FUNCTION ou END_FUNCTION_BLOCK manquant');
   }
-  
-  // Vérifier les variables
-  const varMatch = code.match(/VAR[\s\S]*?END_VAR/g);
-  if (varMatch) {
-    analysis.metrics.variables = varMatch.join('').split(';').length - 1;
+
+  // Vérifier les sections VAR
+  const varSections = code.match(/VAR[_\w]*[\s\S]*?END_VAR/g) || [];
+  analysis.metrics.variables = varSections.reduce((acc, s) => acc + (s.match(/:/g) || []).length, 0);
+  analysis.metrics.functions = (code.match(/FUNCTION(?:_BLOCK)?\s+\w+/g) || []).length;
+
+  // Vérifier les types SCL valides
+  const validTypes = ['BOOL','BYTE','WORD','DWORD','INT','DINT','REAL','TIME','DATE','TOD','DT','STRING','ARRAY','STRUCT'];
+  const typeMatches = code.match(/\s:\s*(?:ARRAY\s*\[.*?\]\s+)?(\w+)/g) || [];
+  const invalidTypes = typeMatches.filter(t => {
+    const type = t.replace(/[:\s\[\]]/g,'').toUpperCase();
+    return !validTypes.some(vt => type.startsWith(vt));
+  });
+  if (invalidTypes.length > 0) {
+    analysis.warnings.push('Types potentiellement invalides: ' + invalidTypes.slice(0,3).join(', '));
   }
-  
-  // Détecter les divisions potentiellement dangereuses
+
+  // Divisions dangereuses
   if (code.includes('/') && !code.includes('IF') && !code.includes('THEN')) {
     analysis.warnings.push('Division détectée sans vérification de division par zéro');
   }
-  
-  // Complexité cyclomatique approximative
-  const conditionals = (code.match(/IF|CASE|FOR|WHILE/g) || []).length;
+
+  // Complexité cyclomatique
+  const conditionals = (code.match(/\b(IF|CASE|FOR|WHILE|REPEAT)\b/g) || []).length;
   analysis.metrics.complexity = conditionals + 1;
-  
-  if (analysis.metrics.complexity > 10) {
-    analysis.suggestions.push('Complexité élevée : envisagez de découper en sous-fonctions');
+  if (analysis.metrics.complexity > 15) {
+    analysis.warnings.push('Complexité élevée (>15) : envisagez de découper en sous-fonctions');
+  } else if (analysis.metrics.complexity > 10) {
+    analysis.suggestions.push('Complexité modérée (>10) : documentez bien les conditions');
   }
-  
-  // Vérifier les commentaires
-  const commentLines = (code.match(/\/\//g) || []).length;
-  const commentRatio = commentLines / analysis.metrics.lines;
-  
-  if (commentRatio < 0.1) {
-    analysis.suggestions.push('Ajoutez plus de commentaires pour améliorer la maintenabilité');
+
+  // Commentaires
+  analysis.metrics.commentLines = (code.match(/\/\/|\(\*|\*\)/g) || []).length / 2;
+  if (analysis.metrics.commentLines / analysis.metrics.lines < 0.1 && analysis.metrics.lines > 20) {
+    analysis.suggestions.push('Ajoutez plus de commentaires (<10%) pour améliorer la maintenabilité');
   }
-  
-  // Score global
-  const errorPenalty = analysis.errors.length * 20;
-  const warningPenalty = analysis.warnings.length * 10;
-  analysis.score = Math.max(0, 100 - errorPenalty - warningPenalty);
-  
+
+  // Conventions de nommage hongrois
+  const varDecls = code.match(/\s+(\w+)\s+:\s+/g) || [];
+  const nonStandard = varDecls.filter(v => {
+    const n = v.trim().replace(':','');
+    return !/^(b|r|i|s|fb|fc|db)/.test(n) && n.length > 0;
+  }).length;
+  if (nonStandard > 3) {
+    analysis.suggestions.push('Utilisez des préfixes hongrois (b_, r_, i_, s_) pour les variables');
+  }
+
+  // TIME sans T#
+  if (code.includes('TIME') && !code.includes('T#')) {
+    analysis.warnings.push('Déclaration TIME sans initialisation T#');
+  }
+
+  // Score
+  const penalty = analysis.errors.length * 20 + analysis.warnings.length * 10 + analysis.suggestions.length * 3;
+  analysis.score = Math.max(0, Math.min(100, 100 - penalty));
   return analysis;
 }
 
@@ -1477,7 +1514,7 @@ function displayCodeReview(analysis) {
     html += '<div class="review-item success"><i class="ti ti-check"></i> Aucun problème détecté !</div>';
   }
   
-  reviewContent.innerHTML = html;
+  reviewContent.innerHTML = safeHTML(html);
   
   // Activer le panel si pas déjà ouvert
   if (!document.getElementById('reviewPanel').classList.contains('active')) {
@@ -1492,9 +1529,11 @@ function copyMessage(btn) {
   
   navigator.clipboard.writeText(text).then(() => {
     const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="ti ti-check"></i> Copié !';
+    btn.textContent = ' Copié !';
+    btn.insertBefore(document.createElement('i'), btn.firstChild);
+    btn.querySelector('i').className = 'ti ti-check';
     setTimeout(() => {
-      btn.innerHTML = originalText;
+      btn.innerHTML = safeHTML(originalText);
     }, 2000);
   });
 }
@@ -1535,7 +1574,7 @@ function addToSnippets(btn) {
     if (title) {
       const snippet = {
         id: Date.now(),
-        title,
+        title: escapeHtml(title),
         code,
         category: 'Personnel',
         description: 'Ajouté depuis une conversation',
@@ -1559,16 +1598,16 @@ function loadProjects() {
   ];
   
   const projectsList = document.getElementById('projectsList');
-  projectsList.innerHTML = projects.map(p => `
+  projectsList.innerHTML = safeHTML(projects.map(p => `
     <div class="project-item ${p.id === currentProject ? 'active' : ''}" onclick="selectProject('${p.id}')">
-      <div class="project-name">${p.name}</div>
+      <div class="project-name">${escapeHtml(p.name)}</div>
       <div class="project-meta">
-        <span><i class="ti ti-cpu"></i> ${p.cpu}</span>
+        <span><i class="ti ti-cpu"></i> ${escapeHtml(p.cpu)}</span>
         <span><i class="ti ti-code"></i> ${p.blocks} blocs</span>
-        <span><i class="ti ti-calendar"></i> ${p.date}</span>
+        <span><i class="ti ti-calendar"></i> ${escapeHtml(p.date)}</span>
       </div>
     </div>
-  `).join('');
+  `).join(''));
 }
 
 function switchProject() {
@@ -1588,47 +1627,179 @@ function selectProject(projectId) {
   switchProject();
 }
 
+// ========== BIBLIOTHÈQUE SCL ÉTENDUE ==========
+const SCL_LIBRARY = {
+  pumps: {
+    startStop: {
+      title: 'Démarrage/Arrêt pompe',
+      category: 'Pompes',
+      description: 'Bloc basique avec temporisation et verrouillages',
+      code: `FUNCTION_BLOCK FB_PompeStartStop
+VAR_INPUT
+    bCmd_Start : BOOL;
+    bCmd_Stop : BOOL;
+    bArret_Urgence : BOOL;
+    rTempo_Min : TIME := T#5S;
+END_VAR
+VAR_OUTPUT
+    bPompe_Marche : BOOL;
+    bDefaut : BOOL;
+    rEtat : INT;
+END_VAR
+VAR
+    fbTempo : TON_TIME;
+    bMemoire : BOOL;
+END_VAR
+IF bArret_Urgence THEN bPompe_Marche := FALSE; bDefaut := FALSE; rEtat := 0; RETURN; END_IF;
+IF bCmd_Start AND NOT bCmd_Stop THEN bMemoire := TRUE;
+ELSIF bCmd_Stop AND NOT bCmd_Start THEN bMemoire := FALSE; END_IF;
+fbTempo(IN := bMemoire, PT := rTempo_Min);
+bPompe_Marche := fbTempo.Q;
+IF bPompe_Marche THEN rEtat := 1; ELSE rEtat := 0; END_IF;
+END_FUNCTION_BLOCK`
+    },
+    alternance: {
+      title: 'Alternance 2 pompes',
+      category: 'Pompes',
+      description: 'Système d\'alternance avec compteur heures de marche',
+      code: `FUNCTION_BLOCK FB_Alternance_2Pompes
+VAR_INPUT
+    bDemande : BOOL;
+    rHeures_P1 : REAL;
+    rHeures_P2 : REAL;
+    bDefaut_P1 : BOOL;
+    bDefaut_P2 : BOOL;
+END_VAR
+VAR_OUTPUT
+    bMarche_P1 : BOOL;
+    bMarche_P2 : BOOL;
+    iPompe_Active : INT;
+    bAlarme : BOOL;
+END_VAR
+VAR bPermute : BOOL; rSeuil_Ecart : REAL := 10.0; END_VAR
+bAlarme := bDefaut_P1 AND bDefaut_P2;
+IF NOT bAlarme THEN
+  IF bDefaut_P1 THEN bMarche_P1 := FALSE; bMarche_P2 := bDemande; iPompe_Active := 2;
+  ELSIF bDefaut_P2 THEN bMarche_P2 := FALSE; bMarche_P1 := bDemande; iPompe_Active := 1;
+  ELSIF rHeures_P1 < rHeures_P2 - rSeuil_Ecart THEN bMarche_P1 := bDemande; bMarche_P2 := FALSE; iPompe_Active := 1;
+  ELSIF rHeures_P2 < rHeures_P1 - rSeuil_Ecart THEN bMarche_P2 := bDemande; bMarche_P1 := FALSE; iPompe_Active := 2;
+  ELSE STATIC VAR bLastCycle : BOOL := FALSE; END_VAR;
+    IF bDemande AND NOT bLastCycle THEN bPermute := NOT bPermute; END_IF;
+    bLastCycle := bDemande;
+    IF bPermute THEN bMarche_P1 := bDemande; iPompe_Active := 1; ELSE bMarche_P2 := bDemande; iPompe_Active := 2; END_IF;
+  END_IF;
+ELSE bMarche_P1 := FALSE; bMarche_P2 := FALSE; iPompe_Active := 0; END_IF;
+END_FUNCTION_BLOCK`
+    }
+  },
+  regulation: {
+    pidCompact: {
+      title: 'PID Pression avec anti-windup',
+      category: 'Régulation',
+      description: 'Régulation PID pour pression avec limitations',
+      code: `FUNCTION_BLOCK FB_PID_Pression
+VAR_INPUT
+    rSetpoint : REAL; rProcessValue : REAL;
+    bMode_Auto : BOOL; bMode_Manuel : BOOL;
+    rOutput_Manuel : REAL;
+    rGain : REAL := 2.0; rTi : REAL := 10.0; rTd : REAL := 2.0;
+    rOutput_Min : REAL := 0.0; rOutput_Max : REAL := 100.0;
+    rCycle_Time : TIME := T#100MS;
+END_VAR
+VAR_OUTPUT
+    rOutput : REAL; rError : REAL;
+    bLimite_Haute : BOOL; bLimite_Basse : BOOL;
+    iEtat : INT;
+END_VAR
+VAR
+    rError_Precedente : REAL; rSomme_Error : REAL;
+    rDerivee : REAL; rDeltaT : REAL;
+END_VAR
+rDeltaT := TIME_TO_SEC(rCycle_Time);
+IF bMode_Manuel THEN rOutput := LIMIT(rOutput_Min, rOutput_Manuel, rOutput_Max); rSomme_Error := 0.0; iEtat := 0; RETURN; END_IF;
+IF NOT bMode_Auto THEN iEtat := 2; RETURN; END_IF;
+iEtat := 1; rError := rSetpoint - rProcessValue;
+STATIC rTermP : REAL; rTermI : REAL; rTermD : REAL; END_VAR
+rTermP := rGain * rError;
+IF ABS(rSomme_Error) < 1000.0 THEN rSomme_Error := rSomme_Error + rError * rDeltaT / rTi; END_IF;
+rTermI := rGain * rSomme_Error / rTi;
+IF rTi > 0.0 THEN rDerivee := (rError - rError_Precedente) / rDeltaT; rTermD := rGain * rTd * rDerivee; END_IF;
+rError_Precedente := rError;
+rOutput := rTermP + rTermI + rTermD;
+IF rOutput > rOutput_Max THEN rOutput := rOutput_Max; bLimite_Haute := TRUE; IF rError > 0.0 THEN rSomme_Error := rSomme_Error - rError * rDeltaT / rTi; END_IF; ELSE bLimite_Haute := FALSE; END_IF;
+IF rOutput < rOutput_Min THEN rOutput := rOutput_Min; bLimite_Basse := TRUE; IF rError < 0.0 THEN rSomme_Error := rSomme_Error - rError * rDeltaT / rTi; END_IF; ELSE bLimite_Basse := FALSE; END_IF;
+END_FUNCTION_BLOCK`
+    }
+  },
+  safety: {
+    alarmes: {
+      title: 'Gestion alarmes avec acquittement',
+      category: 'Sécurité',
+      description: 'Bloc complet avec hiérarchie et signaux',
+      code: `FUNCTION_BLOCK FB_Gestion_Alarmes
+VAR_INPUT
+    bAlarme_Niveau_Haut : BOOL; bAlarme_Niveau_Bas : BOOL;
+    bAlarme_Pression_Haute : BOOL; bAlarme_Pression_Basse : BOOL;
+    bAlarme_Temperature : BOOL; bAlarme_Defaut_Elec : BOOL;
+    bBouton_Acquittement : BOOL;
+END_VAR
+VAR_OUTPUT
+    bAlarme_Active : BOOL; bAlarme_Acquittee : BOOL;
+    bSignal_Sonore : BOOL; bSignal_Lumineux : BOOL;
+    iCode_Alarme : INT; sTexte_Alarme : STRING[80];
+END_VAR
+VAR bMemoire_Alarme : BOOL; fbClignotant : TP_TIME; END_VAR
+STATIC bAnyAlarm : BOOL; END_VAR
+bAnyAlarm := bAlarme_Niveau_Haut OR bAlarme_Niveau_Bas OR bAlarme_Pression_Haute OR bAlarme_Pression_Basse OR bAlarme_Temperature OR bAlarme_Defaut_Elec;
+IF bAnyAlarm AND NOT bMemoire_Alarme THEN bMemoire_Alarme := TRUE; bAlarme_Acquittee := FALSE; END_IF;
+IF bBouton_Acquittement AND NOT bAnyAlarm THEN bMemoire_Alarme := FALSE; bAlarme_Acquittee := TRUE; END_IF;
+bAlarme_Active := bAnyAlarm OR bMemoire_Alarme;
+IF bMemoire_Alarme THEN bSignal_Sonore := TRUE; fbClignotant(IN := TRUE, PT := T#1S); bSignal_Lumineux := fbClignotant.Q;
+ELSIF bAnyAlarm THEN bSignal_Sonore := FALSE; bSignal_Lumineux := TRUE;
+ELSE bSignal_Sonore := FALSE; bSignal_Lumineux := FALSE; END_IF;
+IF bAlarme_Defaut_Elec THEN iCode_Alarme := 6; sTexte_Alarme := 'DEFAUT ELECTRIQUE';
+ELSIF bAlarme_Temperature THEN iCode_Alarme := 5; sTexte_Alarme := 'SURCHAUFFE MOTEUR';
+ELSIF bAlarme_Niveau_Bas THEN iCode_Alarme := 4; sTexte_Alarme := 'NIVEAU BAS - MARCHE A SEC';
+ELSIF bAlarme_Pression_Haute THEN iCode_Alarme := 3; sTexte_Alarme := 'PRESSION TROP ELEVEE';
+ELSIF bAlarme_Niveau_Haut THEN iCode_Alarme := 2; sTexte_Alarme := 'NIVEAU HAUT RESERVOIR';
+ELSIF bAlarme_Pression_Basse THEN iCode_Alarme := 1; sTexte_Alarme := 'PRESSION INSUFFISANTE';
+ELSE iCode_Alarme := 0; sTexte_Alarme := ''; END_IF;
+END_FUNCTION_BLOCK`
+    }
+  }
+};
+
 // ========== SNIPPETS ==========
+let snippetsLibrary = [];
+
 function loadSnippets() {
-  // Charger depuis le localStorage
   const saved = localStorage.getItem('snippets');
   if (saved) {
     snippetsLibrary = JSON.parse(saved);
   } else {
-    // Snippets par défaut
     snippetsLibrary = [
-      {
-        id: 1,
-        title: 'Démarrage pompe simple',
-        category: 'Pompes',
-        description: 'Bloc basique de démarrage/arrêt avec temporisation',
-        code: 'FUNCTION FC_PompeStart : BOOL\nVAR_INPUT\n    bCmd : BOOL;\nEND_VAR\n...'
-      },
-      {
-        id: 2,
-        title: 'PID Pression',
-        category: 'Régulation',
-        description: 'Régulation PID pour pression de refoulement',
-        code: 'FUNCTION_BLOCK FB_PID_Pression\nVAR_INPUT\n    rSetpoint : REAL;\n...'
-      }
+      { id: 1, title: 'Démarrage pompe simple', category: 'Pompes', description: 'Bloc basique de démarrage/arrêt avec temporisation', code: SCL_LIBRARY.pumps.startStop.code },
+      { id: 2, title: 'PID Pression', category: 'Régulation', description: 'Régulation PID pour pression de refoulement', code: SCL_LIBRARY.regulation.pidCompact.code },
+      { id: 3, title: 'Alternance 2 pompes', category: 'Pompes', description: 'Système d\'alternance avec compteur heures de marche', code: SCL_LIBRARY.pumps.alternance.code },
+      { id: 4, title: 'Gestion alarmes', category: 'Sécurité', description: 'Bloc complet avec acquittement et signaux', code: SCL_LIBRARY.safety.alarmes.code }
     ];
   }
-  
   displaySnippets();
 }
 
+
 function displaySnippets() {
   const grid = document.getElementById('snippetsGrid');
-  grid.innerHTML = snippetsLibrary.map(s => `
+  grid.innerHTML = safeHTML(snippetsLibrary.map(s => `
     <div class="snippet-card" onclick="useSnippet(${s.id})">
       <div class="snippet-header">
-        <div class="snippet-title">${s.title}</div>
-        <div class="snippet-category">${s.category}</div>
+        <div class="snippet-title">${escapeHtml(s.title)}</div>
+        <div class="snippet-category">${escapeHtml(s.category)}</div>
       </div>
-      <div class="snippet-desc">${s.description}</div>
-      <div class="snippet-preview">${s.code.substring(0, 100)}...</div>
+      <div class="snippet-desc">${escapeHtml(s.description)}</div>
+      <div class="snippet-preview">${escapeHtml(s.code.substring(0, 100))}...</div>
     </div>
-  `).join('');
+  `).join(''));
 }
 
 function useSnippet(snippetId) {
@@ -2132,16 +2303,34 @@ function toggleVoice() {
   alert('🎤 Entrée vocale en développement');
 }
 
+// ========== VALIDATEUR SCL ==========
 function openValidator() {
-  alert('✅ Validateur SCL standalone en développement');
+  switchPanel('chat');
+  setTimeout(() => {
+    const input = document.getElementById('userInput');
+    input.value = 'Analyse ce code SCL et détecte toutes les erreurs de syntaxe, problèmes de typage, et optimisations possibles. Fournis un rapport détaillé avec score de qualité.';
+    input.focus();
+  }, 100);
 }
 
+// ========== OPTIMISEUR DE CODE ==========
 function openOptimizer() {
-  alert('⚡ Optimiseur de code en développement');
+  switchPanel('chat');
+  setTimeout(() => {
+    const input = document.getElementById('userInput');
+    input.value = 'Optimise ce code SCL pour réduire le temps de cycle, améliorer les performances et la lisibilité. Propose des alternatives plus efficaces.';
+    input.focus();
+  }, 100);
 }
 
+// ========== GÉNÉRATEUR DE DOCUMENTATION ==========
 function openDocGenerator() {
-  alert('📖 Générateur de documentation en développement');
+  switchPanel('chat');
+  setTimeout(() => {
+    const input = document.getElementById('userInput');
+    input.value = 'Génère une documentation technique complète pour ce code SCL : description du bloc, liste des variables avec leurs rôles, algorithme détaillé, et exemples d\'utilisation.';
+    input.focus();
+  }, 100);
 }
 
 // Fermer les modals en cliquant à l'extérieur
