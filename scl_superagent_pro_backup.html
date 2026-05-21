@@ -540,135 +540,6 @@
     .sidebar-item span { display: none; }
     .code-review-panel { width: 100%; position: absolute; inset: 0; z-index: 100; }
   }
-
-  /* Nouvelles fonctionnalités - Bibliothèque SCL */
-  .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-    padding: 16px;
-  }
-  .feature-card {
-    background: var(--bg-primary);
-    border: 0.5px solid var(--border-tertiary);
-    border-radius: 8px;
-    padding: 16px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .feature-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border-color: var(--blue-400);
-  }
-  .feature-icon {
-    width: 48px; height: 48px;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
-    margin-bottom: 12px;
-  }
-  .feature-icon.pumps { background: var(--blue-50); color: var(--blue-400); }
-  .feature-icon.regulation { background: var(--teal-50); color: var(--teal-400); }
-  .feature-icon.safety { background: var(--coral-50); color: var(--coral-400); }
-  .feature-icon.motors { background: var(--amber-50); color: var(--amber-400); }
-  .feature-icon.hvac { background: var(--purple-50); color: var(--purple-400); }
-  .feature-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-  .feature-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
-  .snippet-count { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; }
-
-  /* Validateur & Optimiseur */
-  .analysis-panel {
-    background: var(--bg-primary);
-    border: 0.5px solid var(--border-tertiary);
-    border-radius: 8px;
-    padding: 16px;
-    margin: 16px;
-  }
-  .analysis-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 12px;
-  }
-  .analysis-score {
-    font-size: 24px; font-weight: 700;
-    padding: 8px 16px;
-    border-radius: 8px;
-  }
-  .score-good { background: var(--teal-50); color: var(--teal-800); }
-  .score-warning { background: var(--amber-50); color: var(--amber-800); }
-  .score-bad { background: var(--coral-50); color: var(--coral-800); }
-  .issue-list { list-style: none; }
-  .issue-item {
-    padding: 8px 12px;
-    margin: 4px 0;
-    border-radius: 6px;
-    font-size: 13px;
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .issue-error { background: var(--coral-50); color: var(--coral-800); }
-  .issue-warning { background: var(--amber-50); color: var(--amber-800); }
-  .issue-info { background: var(--blue-50); color: var(--blue-800); }
-  .issue-icon { font-size: 16px; flex-shrink: 0; }
-
-  /* Documentation */
-  .doc-panel {
-    background: var(--bg-primary);
-    border: 0.5px solid var(--border-tertiary);
-    border-radius: 8px;
-    padding: 20px;
-    margin: 16px;
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 13px;
-    line-height: 1.6;
-  }
-  .doc-section { margin-bottom: 16px; }
-  .doc-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--blue-400); }
-  .doc-var-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-  }
-  .doc-var-table th, .doc-var-table td {
-    padding: 6px 8px;
-    text-align: left;
-    border-bottom: 0.5px solid var(--border-tertiary);
-  }
-  .doc-var-table th { background: var(--bg-tertiary); font-weight: 600; }
-  .var-input { color: var(--teal-800); }
-  .var-output { color: var(--blue-800); }
-  .var-inout { color: var(--purple-800); }
-  .var-local { color: var(--gray-600); }
-
-  /* Onglets pour les nouvelles fonctionnalités */
-  .tab-container {
-    display: flex;
-    border-bottom: 0.5px solid var(--border-tertiary);
-    background: var(--bg-secondary);
-    padding: 8px 16px 0;
-    gap: 4px;
-  }
-  .tab-btn {
-    padding: 8px 16px;
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    border-radius: 6px 6px 0 0;
-    transition: all 0.2s;
-  }
-  .tab-btn:hover { background: var(--bg-tertiary); }
-  .tab-btn.active {
-    background: var(--bg-primary);
-    color: var(--blue-400);
-    border: 0.5px solid var(--border-tertiary);
-    border-bottom: none;
-  }
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 </head>
@@ -722,11 +593,6 @@
         <span>Bibliothèque</span>
         <span class="badge">47</span>
       </div>
-      <div class="sidebar-item" onclick="showFeaturePanel('library')">
-        <i class="ti ti-library"></i>
-        <span>Bibliothèque Étendue</span>
-        <span class="badge">NEW</span>
-      </div>
       <div class="sidebar-item" onclick="switchPanel('projects')">
         <i class="ti ti-folder"></i>
         <span>Projets</span>
@@ -737,20 +603,17 @@
       </div>
       
       <div class="sidebar-section">Outils</div>
-      <div class="sidebar-item" onclick="showFeaturePanel('validator')">
+      <div class="sidebar-item" onclick="openValidator()">
         <i class="ti ti-check"></i>
         <span>Validateur SCL</span>
-        <span class="badge">NEW</span>
       </div>
-      <div class="sidebar-item" onclick="showFeaturePanel('optimizer')">
+      <div class="sidebar-item" onclick="openOptimizer()">
         <i class="ti ti-rocket"></i>
         <span>Optimiseur</span>
-        <span class="badge">NEW</span>
       </div>
-      <div class="sidebar-item" onclick="showFeaturePanel('documentation')">
+      <div class="sidebar-item" onclick="openDocGenerator()">
         <i class="ti ti-book"></i>
         <span>Documentation</span>
-        <span class="badge">NEW</span>
       </div>
       
       <div class="sidebar-section">Configuration</div>
@@ -839,72 +702,6 @@
 
       <!-- Config Panel -->
       <div class="panel" id="config-panel">
-
-    <!-- Panels pour les nouvelles fonctionnalités -->
-    <div class="panel" id="library-panel">
-      <div class="tab-container">
-        <button class="tab-btn active" onclick="switchTab('library', 'categories')">Catégories</button>
-        <button class="tab-btn" onclick="switchTab('library', 'snippets')">Snippets</button>
-        <button class="tab-btn" onclick="switchTab('library', 'favorites')">Favoris</button>
-      </div>
-      <div class="tab-content active" id="library-categories-tab">
-        <div class="feature-grid" id="libraryCategories"></div>
-      </div>
-      <div class="tab-content" id="library-snippets-tab">
-        <div class="feature-grid" id="librarySnippets"></div>
-      </div>
-      <div class="tab-content" id="library-favorites-tab">
-        <div class="feature-grid" id="libraryFavorites"></div>
-      </div>
-    </div>
-
-    <div class="panel" id="validator-panel">
-      <div class="analysis-panel">
-        <div class="analysis-header">
-          <div>
-            <div class="doc-title"><i class="ti ti-check"></i> Validateur SCL Avancé</div>
-            <div style="font-size:12px;color:var(--text-secondary)">Analyse statique de code SCL avec 15 règles de validation</div>
-          </div>
-          <button class="send-btn" onclick="runValidator()">
-            <i class="ti ti-play"></i> Analyser
-          </button>
-        </div>
-        <textarea class="chat-textarea" id="validatorCode" rows="8" placeholder="Collez votre code SCL ici pour analyse..." style="font-family:'Consolas','Monaco',monospace;font-size:13px;"></textarea>
-        <div id="validatorResults" style="margin-top:16px;"></div>
-      </div>
-    </div>
-
-    <div class="panel" id="optimizer-panel">
-      <div class="analysis-panel">
-        <div class="analysis-header">
-          <div>
-            <div class="doc-title"><i class="ti ti-rocket"></i> Optimiseur de Code SCL</div>
-            <div style="font-size:12px;color:var(--text-secondary)">Détection des optimisations possibles et suggestions d'amélioration</div>
-          </div>
-          <button class="send-btn" onclick="runOptimizer()">
-            <i class="ti ti-play"></i> Optimiser
-          </button>
-        </div>
-        <textarea class="chat-textarea" id="optimizerCode" rows="8" placeholder="Collez votre code SCL ici pour optimisation..." style="font-family:'Consolas','Monaco',monospace;font-size:13px;"></textarea>
-        <div id="optimizerResults" style="margin-top:16px;"></div>
-      </div>
-    </div>
-
-    <div class="panel" id="documentation-panel">
-      <div class="analysis-panel">
-        <div class="analysis-header">
-          <div>
-            <div class="doc-title"><i class="ti ti-book"></i> Générateur de Documentation</div>
-            <div style="font-size:12px;color:var(--text-secondary)">Génération automatique de documentation technique à partir du code SCL</div>
-          </div>
-          <button class="send-btn" onclick="generateDocumentation()">
-            <i class="ti ti-file-text"></i> Générer
-          </button>
-        </div>
-        <textarea class="chat-textarea" id="docCode" rows="8" placeholder="Collez votre code SCL ici pour générer la documentation..." style="font-family:'Consolas','Monaco',monospace;font-size:13px;"></textarea>
-        <div id="documentationResults" style="margin-top:16px;"></div>
-      </div>
-    </div>
         <div class="config-container">
           <div class="config-sidebar">
             <div class="sidebar-section">Paramètres</div>
@@ -1032,7 +829,6 @@
 let config = {
   apiKey: localStorage.getItem('mistral_api_key') || '',
   model: localStorage.getItem('mistral_model') || 'mistral-small-latest',
-  maxTokens: parseInt(localStorage.getItem('mistral_max_tokens')) || 4096,
   cpuFamily: localStorage.getItem('cpu_family') || 'S7-1200',
   tiaVersion: localStorage.getItem('tia_version') || 'TIA Portal V18',
   stationType: localStorage.getItem('station_type') || 'AEP',
@@ -1111,13 +907,6 @@ document.addEventListener('DOMContentLoaded', () => {
   loadSnippets();
   addWelcomeMessage();
   updateStatus('ready');
-  
-  // Initialiser la bibliothèque au chargement
-  try {
-    renderLibraryCategories();
-  } catch (e) {
-    console.error('Erreur initialisation bibliothèque:', e);
-  }
 });
 
 function initializeApp() {
@@ -1429,7 +1218,7 @@ async function sendMessageNormal(userMessage) {
         ...conversationHistory
       ],
       temperature: 0.7,
-      max_tokens: config.maxTokens
+      max_tokens: 3000
     })
   });
   
@@ -1470,7 +1259,7 @@ async function sendMessageStreaming(userMessage) {
         ...conversationHistory
       ],
       temperature: 0.7,
-      max_tokens: config.maxTokens,
+      max_tokens: 3000,
       stream: true
     })
   });
@@ -2063,7 +1852,7 @@ function generateAPIConfig() {
       <div class="field-group">
         <label class="field-label">Clé API Mistral</label>
         <input type="password" class="field-input" id="apiKey" value="${config.apiKey}" placeholder="sk-...">
-        <div class="field-hint">Obtenez votre clé sur <a href="https://console.mistral.ai" target="_blank" rel="noopener noreferrer">console.mistral.ai</a></div>
+        <div class="field-hint">Obtenez votre clé sur <a href="https://console.mistral.ai" target="_blank">console.mistral.ai</a></div>
       </div>
       
       <div class="field-group">
@@ -2075,13 +1864,6 @@ function generateAPIConfig() {
           <option value="mistral-medium-latest">Mistral Medium</option>
           <option value="mistral-large-latest">Mistral Large</option>
         </select>
-      </div>
-      
-      <div class="field-group">
-        <label class="field-label">Limite de tokens (max_tokens): <span id="maxTokensValue">${config.maxTokens}</span></label>
-        <input type="range" class="field-range" id="maxTokensSlider" min="512" max="8192" step="256" value="${config.maxTokens}" 
-               oninput="document.getElementById('maxTokensValue').textContent = this.value; config.maxTokens = parseInt(this.value);">
-        <div class="field-hint">Contrôle la longueur maximale des réponses. Augmentez pour les générations longues (code complexe, documentation).</div>
       </div>
       
       <button class="btn-primary" onclick="saveAPIConfig()">
@@ -2351,7 +2133,6 @@ function generateAdvancedConfig() {
 function saveAPIConfig() {
   const apiKey = document.getElementById('apiKey').value.trim();
   const model = document.getElementById('modelSelect').value;
-  const maxTokens = config.maxTokens;
   
   if (!apiKey) {
     document.getElementById('apiTestResult').innerHTML = '<div class="alert error"><i class="ti ti-alert-triangle"></i><div>Veuillez entrer une clé API</div></div>';
@@ -2360,11 +2141,9 @@ function saveAPIConfig() {
   
   config.apiKey = apiKey;
   config.model = model;
-  config.maxTokens = maxTokens;
   
   localStorage.setItem('mistral_api_key', apiKey);
   localStorage.setItem('mistral_model', model);
-  localStorage.setItem('mistral_max_tokens', maxTokens.toString());
   
   document.getElementById('apiTestResult').innerHTML = '<div class="alert success"><i class="ti ti-check"></i><div>Configuration sauvegardée avec succès !</div></div>';
   updateStatus('connected');
@@ -2536,39 +2315,22 @@ function openValidator() {
 
 // ========== OPTIMISEUR DE CODE ==========
 function openOptimizer() {
-  showFeaturePanel('optimizer');
+  switchPanel('chat');
+  setTimeout(() => {
+    const input = document.getElementById('userInput');
+    input.value = 'Optimise ce code SCL pour réduire le temps de cycle, améliorer les performances et la lisibilité. Propose des alternatives plus efficaces.';
+    input.focus();
+  }, 100);
 }
 
 // ========== GÉNÉRATEUR DE DOCUMENTATION ==========
 function openDocGenerator() {
-  showFeaturePanel('documentation');
-}
-
-// ========== VALIDATEUR STANDALONE ==========
-function runStandaloneValidator(code) {
-  if (!code || !code.trim()) {
-    return { errors: [{rule: 'INPUT', message: 'Code vide'}], warnings: [], info: [], score: 0 };
-  }
-  const validator = new SCLValidator();
-  return validator.validate(code);
-}
-
-// ========== OPTIMISEUR STANDALONE ==========
-function runStandaloneOptimizer(code) {
-  if (!code || !code.trim()) {
-    return [];
-  }
-  const optimizer = new SCLOptimizer();
-  return optimizer.analyze(code);
-}
-
-// ========== GÉNÉRATEUR STANDALONE ==========
-function runStandaloneDocGenerator(code) {
-  if (!code || !code.trim()) {
-    return { name: 'Inconnu', inputs: [], outputs: [], inouts: [], locals: [], algorithm: [] };
-  }
-  const generator = new DocGenerator();
-  return generator.generate(code);
+  switchPanel('chat');
+  setTimeout(() => {
+    const input = document.getElementById('userInput');
+    input.value = 'Génère une documentation technique complète pour ce code SCL : description du bloc, liste des variables avec leurs rôles, algorithme détaillé, et exemples d\'utilisation.';
+    input.focus();
+  }, 100);
 }
 
 // Fermer les modals en cliquant à l'extérieur
@@ -2602,458 +2364,8 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Fonction pour afficher les panels de nouvelles fonctionnalités
-function showFeaturePanel(feature) {
-  // Masquer tous les panels
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-  
-  // Activer le panel correspondant
-  const panelMap = {
-    'library': 'library-panel',
-    'validator': 'validator-panel',
-    'optimizer': 'optimizer-panel',
-    'documentation': 'documentation-panel'
-  };
-  
-  const panelId = panelMap[feature];
-  if (panelId) {
-    document.getElementById(panelId).classList.add('active');
-  }
-  
-  // Initialiser le contenu si nécessaire
-  if (feature === 'library') {
-    renderLibraryCategories();
-  }
-}
-
-// Fonction pour changer d'onglet dans les panels
-function switchTab(feature, tabName) {
-  const panel = document.getElementById(feature + '-panel');
-  panel.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  panel.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  
-  event.target.classList.add('active');
-  document.getElementById(feature + '-' + tabName + '-tab').classList.add('active');
-}
-
-// Bibliothèque SCL étendue
-const EXTENDED_SCL_LIBRARY = {
-  pumps: {
-    title: 'Pompes & Fluides',
-    icon: 'ti-droplet',
-    color: 'pumps',
-    description: 'Snippets pour pompes, pressions, débits et systèmes fluides',
-    snippets: [
-      { name: 'Démarrage Pompe', code: 'IF StartCommand AND NOT Fault THEN\n  PumpOutput := TRUE;\nEND_IF;' },
-      { name: 'Alternance 2 Pompes', code: 'IF Level > StartLevel THEN\n  IF Pump1Hours < Pump2Hours THEN\n    Pump1 := TRUE;\n  ELSE\n    Pump2 := TRUE;\n  END_IF;\nEND_IF;' },
-      { name: 'Protection Marche à Sec', code: 'IF MinLevelSensor OR Pressure < MinPressure THEN\n  PumpOutput := FALSE;\n  DryRunFault := TRUE;\nEND_IF;' }
-    ]
-  },
-  regulation: {
-    title: 'Régulation PID',
-    icon: 'ti-gauge',
-    color: 'regulation',
-    description: 'Algorithmes PID, anti-windup et régulation de processus',
-    snippets: [
-      { name: 'PID Basique', code: 'error := Setpoint - ProcessValue;\nintegral := integral + error * CycleTime;\nderivative := (error - lastError) / CycleTime;\nOutput := Kp*error + Ki*integral + Kd*derivative;\nlastError := error;' },
-      { name: 'PID Anti-Windup', code: 'error := Setpoint - ProcessValue;\nIF ABS(Output) < OutputMax THEN\n  integral := integral + error * CycleTime;\nEND_IF;\nderivative := (error - lastError) / CycleTime;\nOutput := LIMIT(MinOut, Kp*error + Ki*integral + Kd*derivative, MaxOut);\nlastError := error;' }
-    ]
-  },
-  safety: {
-    title: 'Sécurité & Alarmes',
-    icon: 'ti-shield',
-    color: 'safety',
-    description: 'Gestion des alarmes, acquittements et sécurités machines',
-    snippets: [
-      { name: 'Alarme avec Acquittement', code: 'IF AlarmCondition THEN\n  AlarmActive := TRUE;\n  AlarmTimestamp := TIMESTAMP();\nEND_IF;\nIF Acknowledge AND AlarmActive THEN\n  AlarmActive := FALSE;\n  AlarmAcked := TRUE;\nEND_IF;' },
-      { name: 'Arrêt d\'Urgence', code: 'IF EmergencyStop OR SafetyDoorOpen OR LightCurtainBroken THEN\n  MachineRunning := FALSE;\n  SafetyFault := TRUE;\n  MotorEnable := FALSE;\nEND_IF;' }
-    ]
-  },
-  motors: {
-    title: 'Moteurs & Variateurs',
-    icon: 'ti-motorbike',
-    color: 'motors',
-    description: 'Contrôle moteurs, variateurs de fréquence et protections',
-    snippets: [
-      { name: 'Démarrage Progressif', code: 'IF StartCommand THEN\n  FOR ramp := 0 TO 100 BY RampStep DO\n    MotorSpeed := ramp;\n    WAIT(RampTime / 100);\n  END_FOR;\nEND_IF;' },
-      { name: 'Protection Thermique', code: 'MotorTemp := ReadTempSensor();\nIF MotorTemp > MaxTemp THEN\n  MotorOverheat := TRUE;\n  MotorEnable := FALSE;\nELSIF MotorTemp > WarningTemp THEN\n  TempWarning := TRUE;\nELSE\n  TempWarning := FALSE;\nEND_IF;' }
-    ]
-  },
-  hvac: {
-    title: 'Température & HVAC',
-    icon: 'ti-thermometer',
-    color: 'hvac',
-    description: 'Chauffage, ventilation, climatisation et contrôle température',
-    snippets: [
-      { name: 'Régulation Température', code: 'TempError := SetTemp - ActualTemp;\nIF TempError > DeadBand THEN\n  HeatingValve := MIN(HeatingValve + Step, 100);\nELSIF TempError < -DeadBand THEN\n  HeatingValve := MAX(HeatingValve - Step, 0);\nEND_IF;' },
-      { name: 'Gestion VMC', code: 'IF CO2Level > CO2Max OR Humidity > HumidityMax THEN\n  VMCSpeed := HighSpeed;\nELSIF RoomOccupied THEN\n  VMCSpeed := NormalSpeed;\nELSE\n  VMCSpeed := LowSpeed;\nEND_IF;' }
-    ]
-  }
-};
-
-// Rendu des catégories de bibliothèque
-function renderLibraryCategories() {
-  const container = document.getElementById('libraryCategories');
-  if (!container) return;
-  
-  let html = '';
-  for (const [key, cat] of Object.entries(EXTENDED_SCL_LIBRARY)) {
-    const snippetCount = cat.snippets.length;
-    html += `\n        <div class="feature-card" onclick="showLibrarySnippets('${key}')">\n          <div class="feature-icon ${cat.color}"><i class="ti ${cat.icon}"></i></div>\n          <div class="feature-title">${cat.title}</div>\n          <div class="feature-desc">${cat.description}</div>\n          <div class="snippet-count">${snippetCount} snippet${snippetCount > 1 ? 's' : ''}</div>\n        </div>`;
-  }
-  container.innerHTML = html;
-}
-
-// Affichage des snippets d'une catégorie
-function showLibrarySnippets(category) {
-  const cat = EXTENDED_SCL_LIBRARY[category];
-  if (!cat) return;
-  
-  const container = document.getElementById('librarySnippets');
-  if (!container) return;
-  
-  let html = `<h3 style="padding:16px;font-size:16px;color:var(--blue-400)">${cat.title}</h3>\n<div class="feature-grid">`;
-  cat.snippets.forEach((snip, idx) => {
-    html += `\n  <div class="feature-card" onclick="copySnippet('${category}', ${idx})">\n    <div class="feature-title">${snip.name}</div>\n    <pre style="font-size:11px;margin-top:8px;background:var(--bg-tertiary);padding:8px;border-radius:4px;overflow-x:auto">${escapeHtml(snip.code)}</pre>\n    <div class="snippet-count"><i class="ti ti-copy"></i> Cliquer pour copier</div>\n  </div>`;
-  });
-  html += '\n</div>';
-  
-  container.innerHTML = html;
-  
-  // Switch to snippets tab
-  switchTab('library', 'snippets');
-}
-
-// Copie d'un snippet
-function copySnippet(category, index) {
-  const snip = EXTENDED_SCL_LIBRARY[category].snippets[index];
-  navigator.clipboard.writeText(snip.code).then(() => {
-    showToast(`Snippet "${snip.name}" copié !`, 'success');
-  }).catch(() => {
-    showToast('Erreur copie', 'error');
-  });
-}
-
-// Validateur SCL Avancé
-class SCLValidator {
-  constructor() {
-    this.rules = [];
-    this.initializeRules();
-  }
-  
-  initializeRules() {
-    this.rules = [
-      { id: 'STRUCT_001', name: 'Déclaration FUNCTION', pattern: /FUNCTION\s+\w+:/, type: 'error', message: 'Fonction non déclarée correctement' },
-      { id: 'STRUCT_002', name: 'Correspondance END_FUNCTION', pattern: /END_FUNCTION/, type: 'error', message: 'END_FUNCTION manquant' },
-      { id: 'STRUCT_003', name: 'Déclaration VAR', pattern: /VAR(?:_INPUT|_OUTPUT|_IN_OUT|_LOCAL)?\s*:/, type: 'info', message: 'Section VAR détectée' },
-      { id: 'STRUCT_004', name: 'IF/END_IF', pattern: /IF\s+.+THEN/, type: 'error', message: 'Structure IF incomplète' },
-      { id: 'STRUCT_005', name: 'CASE/END_CASE', pattern: /CASE\s+\w+\s+OF/, type: 'warning', message: 'Vérifier END_CASE' },
-      { id: 'TYPE_001', name: 'Types de données', pattern: /\b(?:BOOL|BYTE|WORD|DWORD|INT|DINT|REAL|STRING|TIME)\b/, type: 'info', message: 'Type standard utilisé' },
-      { id: 'TYPE_002', name: 'ARRAY declaration', pattern: /ARRAY\s*\[\d+\.\.\d+\]\s+OF/, type: 'info', message: 'Tableau déclaré' },
-      { id: 'LOGIC_001', name: 'Division par zéro', pattern: /\/\s*0(?:\.0)?(?!\d)/, type: 'error', message: 'Risque de division par zéro' },
-      { id: 'LOGIC_002', name: 'Comparaison BOOL', pattern: /=\s*(?:TRUE|FALSE)/, type: 'warning', message: 'Préférer NOT ou directement la variable BOOL' },
-      { id: 'TIME_001', name: 'Format TIME', pattern: /T#\d+(?:[smhd]|MS)/, type: 'info', message: 'Constante TIME valide' },
-      { id: 'TIME_002', name: 'TIME invalide', pattern: /T#[^0-9]/, type: 'error', message: 'Format TIME incorrect' },
-      { id: 'STYLE_001', name: 'Variables inutilisées', pattern: null, type: 'warning', message: 'Variable déclarée mais non utilisée (analyse manuelle)' },
-      { id: 'STYLE_002', name: 'Commentaires', pattern: /\/\/.*|\/\*[\s\S]*?\*\//, type: 'info', message: 'Bonnes pratiques de commentaire' },
-      { id: 'FUNC_001', name: 'Appel fonction', pattern: /\w+\([^)]*\)(?!\s*;)/, type: 'info', message: 'Appel de fonction détecté' },
-      { id: 'LIMIT_001', name: 'LIMIT function', pattern: /LIMIT\s*\(/, type: 'info', message: 'Fonction LIMIT utilisée' }
-    ];
-  }
-  
-  validate(code) {
-    const results = { errors: [], warnings: [], info: [], score: 100 };
-    
-    this.rules.forEach(rule => {
-      if (!rule.pattern) return;
-      
-      const matches = code.match(rule.pattern);
-      if (rule.type === 'error' && !matches) {
-        results.errors.push({ rule: rule.id, message: rule.message });
-        results.score -= 15;
-      } else if (rule.type === 'error' && matches && rule.id === 'LOGIC_001') {
-        results.errors.push({ rule: rule.id, message: rule.message });
-        results.score -= 20;
-      } else if (rule.type === 'warning' && matches) {
-        results.warnings.push({ rule: rule.id, message: rule.message });
-        results.score -= 5;
-      } else if (rule.type === 'info' && matches) {
-        results.info.push({ rule: rule.id, message: rule.message });
-      }
-    });
-    
-    results.score = Math.max(0, Math.min(100, results.score));
-    return results;
-  }
-}
-
-// Exécution du validateur
-function runValidator() {
-  const code = document.getElementById('validatorCode').value;
-  const resultsDiv = document.getElementById('validatorResults');
-  
-  if (!code.trim()) {
-    resultsDiv.innerHTML = '<div class="alert error"><i class="ti ti-alert-triangle"></i><div>Veuillez coller du code SCL à analyser</div></div>';
-    return;
-  }
-  
-  const validator = new SCLValidator();
-  const results = validator.validate(code);
-  
-  let html = `<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">`;
-  const scoreClass = results.score >= 80 ? 'score-good' : (results.score >= 60 ? 'score-warning' : 'score-bad');
-  html += `<div class="analysis-score ${scoreClass}">${results.score}/100</div>`;
-  html += `<div style="font-size:13px;color:var(--text-secondary)">${results.errors.length} erreur(s), ${results.warnings.length} avertissement(s), ${results.info.length} info(s)</div>`;
-  html += `</div>`;
-  
-  if (results.errors.length > 0) {
-    html += '<div class="doc-title" style="color:var(--coral-400);margin-top:12px">Erreurs</div><ul class="issue-list">';
-    results.errors.forEach(err => {
-      html += `<li class="issue-item issue-error"><i class="ti ti-x issue-icon"></i><div>[${err.rule}] ${err.message}</div></li>`;
-    });
-    html += '</ul>';
-  }
-  
-  if (results.warnings.length > 0) {
-    html += '<div class="doc-title" style="color:var(--amber-400);margin-top:12px">Avertissements</div><ul class="issue-list">';
-    results.warnings.forEach(warn => {
-      html += `<li class="issue-item issue-warning"><i class="ti ti-alert-triangle issue-icon"></i><div>[${warn.rule}] ${warn.message}</div></li>`;
-    });
-    html += '</ul>';
-  }
-  
-  if (results.info.length > 0) {
-    html += '<div class="doc-title" style="color:var(--blue-400);margin-top:12px">Informations</div><ul class="issue-list">';
-    results.info.forEach(info => {
-      html += `<li class="issue-item issue-info"><i class="ti ti-info-circle issue-icon"></i><div>[${info.rule}] ${info.message}</div></li>`;
-    });
-    html += '</ul>';
-  }
-  
-  resultsDiv.innerHTML = html;
-}
-
-// Optimiseur de Code SCL
-class SCLOptimizer {
-  analyze(code) {
-    const suggestions = [];
-    
-    // Détection IF imbriqués
-    const nestedIf = (code.match(/IF\s+.+THEN[\s\S]*?IF\s+.+THEN/g) || []).length;
-    if (nestedIf > 0) {
-      suggestions.push({
-        type: 'optimization',
-        title: 'Conditions imbriquées',
-        before: 'IF condition1 THEN\n  IF condition2 THEN\n    action;\n  END_IF;\nEND_IF;',
-        after: 'IF condition1 AND condition2 THEN\n  action;\nEND_IF;',
-        gain: 'Réduction de la complexité cyclomatique'
-      });
-    }
-    
-    // Calculs redondants
-    const redundantCalc = code.match(/(\w+)\s*:=\s*\1\s*[+\-*\/]\s*\d+/g);
-    if (redundantCalc) {
-      suggestions.push({
-        type: 'performance',
-        title: 'Calculs redondants détectés',
-        description: 'Certaines variables sont recalculées inutilement',
-        code: redundantCalc.join('\n')
-      });
-    }
-    
-    // Assignations multiples
-    const multiAssign = (code.match(/:=\s*TRUE/g) || []).length + (code.match(/:=\s*FALSE/g) || []).length;
-    if (multiAssign > 5) {
-      suggestions.push({
-        type: 'refactoring',
-        title: 'Multiples assignations BOOL',
-        description: `Trouvé ${multiAssign} assignations TRUE/FALSE. Envisager un bloc de reset/set groupé.`,
-        gain: 'Meilleure lisibilité'
-      });
-    }
-    
-    // Constantes magiques
-    const magicNumbers = code.match(/:=\s*\d{2,}(?!\d)/g) || [];
-    if (magicNumbers.length > 0) {
-      suggestions.push({
-        type: 'best-practice',
-        title: 'Constantes magiques',
-        description: 'Remplacer les nombres en dur par des constantes nommées',
-        code: magicNumbers.slice(0, 3).join('\n') + (magicNumbers.length > 3 ? '\n...' : '')
-      });
-    }
-    
-    return suggestions;
-  }
-}
-
-// Exécution de l'optimiseur
-function runOptimizer() {
-  const code = document.getElementById('optimizerCode').value;
-  const resultsDiv = document.getElementById('optimizerResults');
-  
-  if (!code.trim()) {
-    resultsDiv.innerHTML = '<div class="alert error"><i class="ti ti-alert-triangle"></i><div>Veuillez coller du code SCL à optimiser</div></div>';
-    return;
-  }
-  
-  const optimizer = new SCLOptimizer();
-  const suggestions = optimizer.analyze(code);
-  
-  if (suggestions.length === 0) {
-    resultsDiv.innerHTML = '<div class="alert success"><i class="ti ti-check"></i><div>Aucune optimisation majeure détectée. Le code semble bien structuré.</div></div>';
-    return;
-  }
-  
-  let html = `<div class="doc-title" style="margin-bottom:12px">${suggestions.length} suggestion(s) d'optimisation</div>`;
-  
-  suggestions.forEach((sug, idx) => {
-    html += `\n<div class="feature-card" style="margin-bottom:12px">`;
-    html += `<div class="feature-title">${sug.title}</div>`;
-    html += `<div style="font-size:12px;color:var(--text-secondary);margin:4px 0">${sug.description || sug.gain || ''}</div>`;
-    
-    if (sug.before) {
-      html += `\n<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">`;
-      html += `<div><div style="font-size:11px;color:var(--coral-400);margin-bottom:4px">Avant:</div><pre style="font-size:11px;background:var(--coral-50);padding:8px;border-radius:4px;overflow-x:auto">${escapeHtml(sug.before)}</pre></div>`;
-      html += `<div><div style="font-size:11px;color:var(--teal-400);margin-bottom:4px">Après:</div><pre style="font-size:11px;background:var(--teal-50);padding:8px;border-radius:4px;overflow-x:auto">${escapeHtml(sug.after)}</pre></div>`;
-      html += `</div>`;
-    }
-    
-    if (sug.code) {
-      html += `<pre style="font-size:11px;background:var(--bg-tertiary);padding:8px;border-radius:4px;margin-top:8px;overflow-x:auto">${escapeHtml(sug.code)}</pre>`;
-    }
-    
-    html += `</div>`;
-  });
-  
-  resultsDiv.innerHTML = html;
-}
-
-// Générateur de Documentation
-class DocGenerator {
-  generate(code) {
-    const doc = {
-      name: 'Bloc Inconnu',
-      inputs: [],
-      outputs: [],
-      inouts: [],
-      locals: [],
-      algorithm: []
-    };
-    
-    // Extraction du nom
-    const nameMatch = code.match(/FUNCTION(?:_BLOCK)?\s+(\w+):/);
-    if (nameMatch) doc.name = nameMatch[1];
-    
-    // Extraction des variables
-    const varSections = {
-      inputs: /VAR_INPUT([\s\S]*?)END_VAR/i,
-      outputs: /VAR_OUTPUT([\s\S]*?)END_VAR/i,
-      inouts: /VAR_IN_OUT([\s\S]*?)END_VAR/i,
-      locals: /VAR(?:_LOCAL)?([\s\S]*?)END_VAR/i
-    };
-    
-    for (const [type, pattern] of Object.entries(varSections)) {
-      const match = code.match(pattern);
-      if (match) {
-        const lines = match[1].split('\n');
-        lines.forEach(line => {
-          const trimmed = line.trim();
-          if (trimmed && !trimmed.startsWith('//')) {
-            const parts = trimmed.split(':');
-            if (parts.length >= 2) {
-              const names = parts[0].trim().split(',');
-              const dtype = parts[1].trim().split(';')[0];
-              names.forEach(name => {
-                if (name.trim()) {
-                  doc[type].push({ name: name.trim(), type: dtype });
-                }
-              });
-            }
-          }
-        });
-      }
-    }
-    
-    // Extraction algorithme (simplifié)
-    const algoMatch = code.match(/BEGIN([\s\S]*)/);
-    if (algoMatch) {
-      doc.algorithm = algoMatch[1].trim().split('\n').slice(0, 10);
-    }
-    
-    return doc;
-  }
-}
-
-// Génération de documentation
-function generateDocumentation() {
-  const code = document.getElementById('docCode').value;
-  const resultsDiv = document.getElementById('documentationResults');
-  
-  if (!code.trim()) {
-    resultsDiv.innerHTML = '<div class="alert error"><i class="ti ti-alert-triangle"></i><div>Veuillez coller du code SCL à documenter</div></div>';
-    return;
-  }
-  
-  const generator = new DocGenerator();
-  const doc = generator.generate(code);
-  
-  let html = `<div class="doc-panel">`;
-  html += `<div class="doc-section"><div class="doc-title">${doc.name}</div></div>`;
-  
-  // Variables table
-  html += `<div class="doc-section"><div class="doc-title">Variables</div>`;
-  html += `<table class="doc-var-table"><thead><tr><th>Nom</th><th>Type</th><th>Catégorie</th></tr></thead><tbody>`;
-  
-  const allVars = [
-    ...doc.inputs.map(v => ({...v, cat: 'INPUT'})),
-    ...doc.outputs.map(v => ({...v, cat: 'OUTPUT'})),
-    ...doc.inouts.map(v => ({...v, cat: 'IN_OUT'})),
-    ...doc.locals.map(v => ({...v, cat: 'LOCAL'}))
-  ];
-  
-  if (allVars.length === 0) {
-    html += `<tr><td colspan="3" style="text-align:center;color:var(--text-tertiary)">Aucune variable détectée</td></tr>`;
-  } else {
-    allVars.forEach(v => {
-      const catClass = `var-${v.cat.toLowerCase().replace('_', '-')}`;
-      html += `<tr><td><code>${v.name}</code></td><td>${v.type}</td><td><span class="${catClass}">${v.cat}</span></td></tr>`;
-    });
-  }
-  
-  html += `</tbody></table></div>`;
-  
-  // Algorithme
-  if (doc.algorithm.length > 0) {
-    html += `<div class="doc-section"><div class="doc-title">Algorithme (extrait)</div>`;
-    html += `<pre style="background:var(--bg-tertiary);padding:12px;border-radius:4px;overflow-x:auto;font-size:12px">${escapeHtml(doc.algorithm.join('\n'))}</pre></div>`;
-  }
-  
-  // Exemple d'utilisation
-  html += `<div class="doc-section"><div class="doc-title">Exemple d'appel</div>`;
-  html += `<pre style="background:var(--blue-50);padding:12px;border-radius:4px;overflow-x:auto;font-size:12px">${doc.name}(</pre>`;
-  allVars.slice(0, 5).forEach((v, i) => {
-    html += `<pre style="background:var(--blue-50);padding:12px;border-radius:4px;overflow-x:auto;font-size:12px">  ${v.name} := ${v.type === 'BOOL' ? 'FALSE' : '0'},</pre>`;
-  });
-  html += `<pre style="background:var(--blue-50);padding:12px;border-radius:4px;overflow-x:auto;font-size:12px">);</pre></div>`;
-  
-  html += `</div>`;
-  
-  resultsDiv.innerHTML = html;
-}
-
-// Toast notifications
-function showToast(message, type = 'info') {
-  const toast = document.createElement('div');
-  toast.style.cssText = `position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:6px;background:${type === 'success' ? 'var(--teal-50)' : (type === 'error' ? 'var(--coral-50)' : 'var(--blue-50)')};border:0.5px solid ${type === 'success' ? 'var(--teal-400)' : (type === 'error' ? 'var(--coral-400)' : 'var(--blue-400)')};color:${type === 'success' ? 'var(--teal-800)' : (type === 'error' ? 'var(--coral-800)' : 'var(--blue-800)')};font-size:13px;z-index:10000;animation:slideIn 0.3s ease`;
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
-}
-
 console.log('%c🚀 SCL SuperAgent Pro initialisé', 'color: #378ADD; font-size: 16px; font-weight: bold');
-console.log('%cVersion: 2.1 Pro+ | Bibliothèque Étendue, Validateur, Optimiseur, Documentation', 'color: #5F5E5A');
+console.log('%cVersion: 2.0 Pro | Multi-modèles, Export XML, Code Review', 'color: #5F5E5A');
 </script>
 
 </body>
