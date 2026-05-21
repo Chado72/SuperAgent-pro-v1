@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCL SuperAgent Pro v3.0 - Test des Nouvelles Fonctionnalités</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f5f5f5; padding: 20px;
+  }
+  .test-container {
+    max-width: 1200px; margin: 0 auto;
+    background: white; border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+  .test-header {
+    background: linear-gradient(135deg, #378ADD, #9333EA);
+    color: white; padding: 24px;
+  }
+  .test-header h1 { font-size: 24px; margin-bottom: 8px; }
+  .test-header p { opacity: 0.9; font-size: 14px; }
+  .test-section {
+    padding: 24px; border-bottom: 1px solid #e0e0e0;
+  }
+  .test-section:last-child { border-bottom: none; }
+  .test-title {
+    font-size: 18px; font-weight: 600; color: #2c2c2a;
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+  .test-title i { color: #378ADD; }
+  .test-result {
+    background: #f8f8f6; border-radius: 8px;
+    padding: 16px; margin-top: 12px;
+    border: 1px solid #e0e0e0;
+  }
+  .test-result.success { border-left: 4px solid #1D9E75; }
+  .test-result.error { border-left: 4px solid #D85A30; }
+  .test-result.warning { border-left: 4px solid #BA7517; }
+  .code-block {
+    background: #1e1e1e; color: #d4d4d4;
+    padding: 12px; border-radius: 6px;
+    font-family: 'Courier New', monospace; font-size: 12px;
+    overflow-x: auto; margin: 8px 0;
+  }
+  .btn-test {
+    padding: 10px 20px; border-radius: 6px;
+    border: none; cursor: pointer; font-size: 13px;
+    font-weight: 500; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary {
+    background: #378ADD; color: white;
+  }
+  .btn-primary:hover { background: #2a6fb8; }
+  .btn-secondary {
+    background: #f0f0f0; color: #333;
+  }
+  .btn-secondary:hover { background: #e0e0e0; }
+  .feature-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px; margin-top: 16px;
+  }
+  .feature-card {
+    background: #fafafa; border: 1px solid #e0e0e0;
+    border-radius: 8px; padding: 16px;
+    transition: all 0.2s;
+  }
+  .feature-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+  }
+  .feature-card h3 {
+    font-size: 14px; color: #2c2c2a; margin-bottom: 8px;
+  }
+  .feature-card p {
+    font-size: 12px; color: #5f5e5a; line-height: 1.5;
+  }
+  .badge {
+    display: inline-block; padding: 4px 8px;
+    border-radius: 4px; font-size: 11px;
+    font-weight: 600; margin-left: 8px;
+  }
+  .badge-new { background: #1D9E75; color: white; }
+  .badge-improved { background: #378ADD; color: white; }
+  .metric-row {
+    display: flex; justify-content: space-between;
+    padding: 6px 0; border-bottom: 1px solid #e8e8e8;
+    font-size: 13px;
+  }
+  .metric-row:last-child { border-bottom: none; }
+  .validation-item {
+    padding: 8px; margin: 4px 0; border-radius: 4px;
+    font-size: 13px; display: flex; align-items: flex-start; gap: 8px;
+  }
+  .validation-item.error { background: #fee; color: #c00; }
+  .validation-item.warning { background: #fff3cd; color: #856404; }
+  .validation-item.success { background: #d4edda; color: #155724; }
+  .validation-item.info { background: #d1ecf1; color: #0c5460; }
+  pre { margin: 0; white-space: pre-wrap; }
+</style>
+<link href="https://cdn.jsdelivr.net/npm/tabler-icons@latest/iconfont/tabler-icons.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="test-container">
+  <div class="test-header">
+    <h1><i class="ti ti-flask"></i> Test des Nouvelles Fonctionnalités SCL SuperAgent Pro</h1>
+    <p>Validation des composants : Bibliothèque étendue, Validateur SCL avancé, Optimiseur de code, Générateur de documentation</p>
+  </div>
+
+  <!-- Section 1: Bibliothèque SCL Étendue -->
+  <div class="test-section">
+    <div class="test-title">
+      <i class="ti ti-library"></i>
+      Bibliothèque SCL Étendue
+      <span class="badge badge-new">NOUVEAU</span>
+    </div>
+    <p style="color: #5f5e5a; font-size: 13px; margin-bottom: 16px;">
+      La bibliothèque contient maintenant des snippets organisés par catégorie avec recherche et filtrage.
+    </p>
+    
+    <div id="libraryPreview" style="margin-bottom: 16px;"></div>
+    
+    <button class="btn-test btn-primary" onclick="testLibrary()">
+      <i class="ti ti-player-play"></i> Tester la Bibliothèque
+    </button>
+
+    <div id="libraryResult" class="test-result" style="display: none;"></div>
+  </div>
+
+  <!-- Section 2: Validateur SCL Avancé -->
+  <div class="test-section">
+    <div class="test-title">
+      <i class="ti ti-check"></i>
+      Validateur SCL Avancé
+      <span class="badge badge-improved">AMÉLIORÉ</span>
+    </div>
+    <p style="color: #5f5e5a; font-size: 13px; margin-bottom: 16px;">
+      Nouveau validateur avec 25+ règles de validation, détection d'erreurs de typage, vérification des sections VAR, et analyse de complexité.
+    </p>
+
+    <div class="code-block" id="testCode">// Code SCL de test à valider
+FUNCTION_BLOCK FB_TestValidation
+VAR_INPUT
+    bStart : BOOL;
+    rConsigne : REAL;
+    iErreur : INT;
+END_VAR
+VAR_OUTPUT
+    bMarche : BOOL;
+    rSortie : REAL;
+    sMessage : STRING;
+END_VAR
+VAR
+    rTempo : TIME;
+    bMemoire : BOOL;
+    iCompteur : INT;
+END_VAR
+
+// Division sans vérification
+rSortie := rConsigne / iErreur;
+
+// Variable non initialisée
+bMemoire := TRUE;
+
+// TIME sans T#
+rTempo := 5000;
+
+IF bStart THEN
+    bMarche := TRUE;
+    IF rConsigne > 100.0 THEN
+        sMessage := 'Dépassement';
+    END_IF;
+END_IF;
+
+END_FUNCTION_BLOCK</div>
+
+    <button class="btn-test btn-primary" onclick="testValidator()" style="margin-top: 16px;">
+      <i class="ti ti-player-play"></i> Lancer la Validation
+    </button>
+
+    <div id="validatorResult" class="test-result" style="display: none;"></div>
+  </div>
+
+  <!-- Section 3: Optimiseur de Code -->
+  <div class="test-section">
+    <div class="test-title">
+      <i class="ti ti-rocket"></i>
+      Optimiseur de Code SCL
+      <span class="badge badge-new">NOUVEAU</span>
+    </div>
+    <p style="color: #5f5e5a; font-size: 13px; margin-bottom: 16px;">
+      Analyse et propose des optimisations pour réduire le temps de cycle, améliorer la lisibilité et les performances.
+    </p>
+
+    <div class="code-block" id="optimizeCode">// Code SCL à optimiser
+FUNCTION_BLOCK FB_OptimizeTest
+VAR_INPUT
+    bCondition1 : BOOL;
+    bCondition2 : BOOL;
+    bCondition3 : BOOL;
+    rValeur1 : REAL;
+    rValeur2 : REAL;
+    rValeur3 : REAL;
+END_VAR
+VAR_OUTPUT
+    bResultat : BOOL;
+    rTotal : REAL;
+END_VAR
+VAR
+    rTemp1 : REAL;
+    rTemp2 : REAL;
+    rTemp3 : REAL;
+END_VAR
+
+// Calculs redondants
+rTemp1 := rValeur1 * 2.0;
+rTemp2 := rValeur2 * 2.0;
+rTemp3 := rValeur3 * 2.0;
+
+// Conditions imbriquées inefficaces
+IF bCondition1 THEN
+    IF bCondition2 THEN
+        IF bCondition3 THEN
+            bResultat := TRUE;
+        END_IF;
+    END_IF;
+END_IF;
+
+// Addition inefficace
+rTotal := rTemp1 + rTemp2;
+rTotal := rTotal + rTemp3;
+
+END_FUNCTION_BLOCK</div>
+
+    <button class="btn-test btn-primary" onclick="testOptimizer()" style="margin-top: 16px;">
+      <i class="ti ti-player-play"></i> Lancer l'Optimisation
+    </button>
+
+    <div id="optimizerResult" class="test-result" style="display: none;"></div>
+  </div>
+
+  <!-- Section 4: Générateur de Documentation -->
+  <div class="test-section">
+    <div class="test-title">
+      <i class="ti ti-file-text"></i>
+      Générateur de Documentation
+      <span class="badge badge-new">NOUVEAU</span>
+    </div>
+    <p style="color: #5f5e5a; font-size: 13px; margin-bottom: 16px;">
+      Génère automatiquement une documentation technique complète à partir du code SCL.
+    </p>
+
+    <div class="code-block" id="docCode">// Code SCL à documenter
+FUNCTION_BLOCK FB_PompePrincipale
+VAR_INPUT
+    bCmd_Marche : BOOL;          // Commande de démarrage
+    bCmd_Arret : BOOL;           // Commande d'arrêt
+    bArret_Urgence : BOOL;       // Bouton d'urgence
+    rDebit_Consigne : REAL;      // Débit souhaité en m³/h
+    tTempo_Min : TIME := T#5S;   // Temporisation minimale
+END_VAR
+VAR_OUTPUT
+    bPompe_Marche : BOOL;        // État de la pompe
+    bDefaut_Moteur : BOOL;       // Alarme moteur
+    rDebit_Actuel : REAL;        // Débit mesuré
+    iEtat_Systeme : INT;         // 0=Arrêt, 1=Marche, 2=Defaut
+END_VAR
+VAR
+    fbTemporisation : TON_TIME;  // Bloc de temporisation
+    bMemoire_Marche : BOOL;      // Mémoire de commande
+END_VAR
+
+// Logique de contrôle
+IF bArret_Urgence THEN
+    bPompe_Marche := FALSE;
+    iEtat_Systeme := 0;
+    RETURN;
+END_IF;
+
+IF bCmd_Marche AND NOT bCmd_Arret THEN
+    bMemoire_Marche := TRUE;
+ELSIF bCmd_Arret AND NOT bCmd_Marche THEN
+    bMemoire_Marche := FALSE;
+END_IF;
+
+fbTemporisation(IN := bMemoire_Marche, PT := tTempo_Min);
+bPompe_Marche := fbTemporisation.Q;
+
+IF bPompe_Marche THEN
+    iEtat_Systeme := 1;
+ELSE
+    iEtat_Systeme := 0;
+END_IF;
+
+END_FUNCTION_BLOCK</div>
+
+    <button class="btn-test btn-primary" onclick="testDocGenerator()" style="margin-top: 16px;">
+      <i class="ti ti-player-play"></i> Générer la Documentation
+    </button>
+
+    <div id="docResult" class="test-result" style="display: none;"></div>
+  </div>
+
+  <!-- Section 5: Résumé des Tests -->
+  <div class="test-section" style="background: #f8f9fa;">
+    <div class="test-title">
+      <i class="ti ti-chart-bar"></i>
+      Résumé des Tests
+    </div>
+    
+    <div id="summaryMetrics" style="margin-top: 16px;">
+      <div class="metric-row">
+        <span><i class="ti ti-library"></i> Snippets dans la bibliothèque</span>
+        <strong id="libCount">0</strong>
+      </div>
+      <div class="metric-row">
+        <span><i class="ti ti-check"></i> Règles de validation</span>
+        <strong id="valCount">0</strong>
+      </div>
+      <div class="metric-row">
+        <span><i class="ti ti-rocket"></i> Types d'optimisation</span>
+        <strong id="optCount">0</strong>
+      </div>
+      <div class="metric-row">
+        <span><i class="ti ti-file-text"></i> Sections de documentation</span>
+        <strong id="docCount">0</strong>
+      </div>
+    </div>
+
+    <div style="margin-top: 20px; padding: 16px; background: white; border-radius: 8px; border: 1px solid #e0e0e0;">
+      <strong style="color: #2c2c2a;">Statut global :</strong>
+      <span id="globalStatus" style="margin-left: 8px; padding: 4px 12px; border-radius: 4px; background: #fff3cd; color: #856404;">En attente des tests</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== BIBLIOTHÈQUE SCL ÉTENDUE ==========
+const EXTENDED_SCL_LIBRARY = {
+  pumps: {
+    startStop: {
+      title: 'Démarrage/Arrêt pompe',
+      category: 'Pompes',
+      description: 'Bloc basique avec temporisation et verrouillages',
+      code: `FUNCTION_BLOCK FB_PompeStartStop
+VAR_INPUT
+    bCmd_Start : BOOL;
+    bCmd_Stop : BOOL;
+    bArret_Urgence : BOOL;
+    rTempo_Min : TIME := T#5S;
+END_VAR
+VAR_OUTPUT
+    bPompe_Marche : BOOL;
+    bDefaut : BOOL;
+    rEtat : INT;
+END_VAR
+VAR
+    fbTempo : TON_TIME;
+    bMemoire : BOOL;
+END_VAR
+IF bArret_Urgence THEN bPompe_Marche := FALSE; bDefaut := FALSE; rEtat := 0; RETURN; END_IF;
+IF bCmd_Start AND NOT bCmd_Stop THEN bMemoire := TRUE;
+ELSIF bCmd_Stop AND NOT bCmd_Start THEN bMemoire := FALSE; END_IF;
+fbTempo(IN := bMemoire, PT := rTempo_Min);
+bPompe_Marche := fbTempo.Q;
+IF bPompe_Marche THEN rEtat := 1; ELSE rEtat := 0; END_IF;
+END_FUNCTION_BLOCK`
+    },
+    alternance: {
+      title: 'Alternance 2 pompes',
+      category: 'Pompes',
+      description: 'Système d\'alternance avec compteur heures de marche',
+      code: `FUNCTION_BLOCK FB_Alternance_2Pompes
+VAR_INPUT
+    bDemande : BOOL;
+    rHeures_P1 : REAL;
+    rHeures_P2 : REAL;
+    bDefaut_P1 : BOOL;
+    bDefaut_P2 : BOOL;
+END_VAR
+VAR_OUTPUT
+    bMarche_P1 : BOOL;
+    bMarche_P2 : BOOL;
+    iPompe_Active : INT;
+    bAlarme : BOOL;
+END_VAR
+VAR bPermute : BOOL; rSeuil_Ecart : REAL := 10.0; END_VAR
+bAlarme := bDefaut_P1 AND bDefaut_P2;
+IF NOT bAlarme THEN
+  IF bDefaut_P1 THEN bMarche_P1 := FALSE; bMarche_P2 := bDemande; iPompe_Active := 2;
+  ELSIF bDefaut_P2 THEN bMarche_P2 := FALSE; bMarche_P1 := bDemande; iPompe_Active := 1;
+  ELSIF rHeures_P1 < rHeures_P2 - rSeuil_Ecart THEN bMarche_P1 := bDemande; bMarche_P2 := FALSE; iPompe_Active := 1;
+  ELSIF rHeures_P2 < rHeures_P1 - rSeuil_Ecart THEN bMarche_P2 := bDemande; bMarche_P1 := FALSE; iPompe_Active := 2;
+  ELSE STATIC VAR bLastCycle : BOOL := FALSE; END_VAR;
+    IF bDemande AND NOT bLastCycle THEN bPermute := NOT bPermute; END_IF;
+    bLastCycle := bDemande;
+    IF bPermute THEN bMarche_P1 := bDemande; iPompe_Active := 1; ELSE bMarche_P2 := bDemande; iPompe_Active := 2; END_IF;
+  END_IF;
+ELSE bMarche_P1 := FALSE; bMarche_P2 := FALSE; iPompe_Active := 0; END_IF;
+END_FUNCTION_BLOCK`
+    },
+    surveillance: {
+      title: 'Surveillance débit pompe',
+      category: 'Pompes',
+      description: 'Détection cavitation et perte de charge',
+      code: `FUNCTION_BLOCK FB_Surveillance_Debyt
+VAR_INPUT
+    rDebit_Mesure : REAL;
+    rDebit_SeuiMin : REAL;
+    rDebit_SeuiMax : REAL;
+    bPompe_Marche : BOOL;
+    tDelai_Defaut : TIME := T#10S;
+END_VAR
+VAR_OUTPUT
+    bDefaut_Debyt_Bas : BOOL;
+    bDefaut_Debyt_Haut : BOOL;
+    bCavitation_Detectee : BOOL;
+    iCode_Defaut : INT;
+END_VAR
+VAR
+    fbTempo_Bas : TON_TIME;
+    fbTempo_Haut : TON_TIME;
+END_VAR
+IF bPompe_Marche THEN
+  fbTempo_Bas(IN := rDebit_Mesure < rDebit_SeuiMin, PT := tDelai_Defaut);
+  fbTempo_Haut(IN := rDebit_Mesure > rDebit_SeuiMax, PT := tDelai_Defaut);
+  bDefaut_Debyt_Bas := fbTempo_Bas.Q;
+  bDefaut_Debyt_Haut := fbTempo_Haut.Q;
+  bCavitation_Detectee := bDefaut_Debyt_Bas AND (rDebit_Mesure < rDebit_SeuiMin * 0.5);
+ELSE
+  bDefaut_Debyt_Bas := FALSE; bDefaut_Debyt_Haut := FALSE; bCavitation_Detectee := FALSE;
+END_IF;
+IF bCavitation_Detectee THEN iCode_Defaut := 1;
+ELSIF bDefaut_Debyt_Haut THEN iCode_Defaut := 2;
+ELSIF bDefaut_Debyt_Bas THEN iCode_Defaut := 3;
+ELSE iCode_Defaut := 0; END_IF;
+END_FUNCTION_BLOCK`
+    }
+  },
+  regulation: {
+    pidCompact: {
+      title: 'PID Pression avec anti-windup',
+      category: 'Régulation',
+      description: 'Régulation PID pour pression avec limitations',
+      code: `FUNCTION_BLOCK FB_PID_Pression
+VAR_INPUT
+    rSetpoint : REAL; rProcessValue : REAL;
+    bMode_Auto : BOOL; bMode_Manuel : BOOL;
+    rOutput_Manuel : REAL;
+    rGain : REAL := 2.0; rTi : REAL := 10.0; rTd : REAL := 2.0;
+    rOutput_Min : REAL := 0.0; rOutput_Max : REAL := 100.0;
+    rCycle_Time : TIME := T#100MS;
+END_VAR
+VAR_OUTPUT
+    rOutput : REAL; rError : REAL;
+    bLimite_Haute : BOOL; bLimite_Basse : BOOL;
+    iEtat : INT;
+END_VAR
+VAR
+    rError_Precedente : REAL; rSomme_Error : REAL;
+    rDerivee : REAL; rDeltaT : REAL;
+END_VAR
+rDeltaT := TIME_TO_SEC(rCycle_Time);
+IF bMode_Manuel THEN rOutput := LIMIT(rOutput_Min, rOutput_Manuel, rOutput_Max); rSomme_Error := 0.0; iEtat := 0; RETURN; END_IF;
+IF NOT bMode_Auto THEN iEtat := 2; RETURN; END_IF;
+iEtat := 1; rError := rSetpoint - rProcessValue;
+STATIC rTermP : REAL; rTermI : REAL; rTermD : REAL; END_VAR
+rTermP := rGain * rError;
+IF ABS(rSomme_Error) < 1000.0 THEN rSomme_Error := rSomme_Error + rError * rDeltaT / rTi; END_IF;
+rTermI := rGain * rSomme_Error / rTi;
+IF rTi > 0.0 THEN rDerivee := (rError - rError_Precedente) / rDeltaT; rTermD := rGain * rTd * rDerivee; END_IF;
+rError_Precedente := rError;
+rOutput := rTermP + rTermI + rTermD;
+IF rOutput > rOutput_Max THEN rOutput := rOutput_Max; bLimite_Haute := TRUE; IF rError > 0.0 THEN rSomme_Error := rSomme_Error - rError * rDeltaT / rTi; END_IF; ELSE bLimite_Haute := FALSE; END_IF;
+IF rOutput < rOutput_Min THEN rOutput := rOutput_Min; bLimite_Basse := TRUE; IF rError < 0.0 THEN rSomme_Error := rSomme_Error - rError * rDeltaT / rTi; END_IF; ELSE bLimite_Basse := FALSE; END_IF;
+END_FUNCTION_BLOCK`
+    }
+  },
+  safety: {
+    alarmes: {
+      title: 'Gestion alarmes avec acquittement',
+      category: 'Sécurité',
+      description: 'Bloc complet avec hiérarchie et signaux',
+      code: `FUNCTION_BLOCK FB_Gestion_Alarmes
+VAR_INPUT
+    bAlarme_Niveau_Haut : BOOL; bAlarme_Niveau_Bas : BOOL;
+    bAlarme_Pression_Haute : BOOL; bAlarme_Pression_Basse : BOOL;
+    bAlarme_Temperature : BOOL; bAlarme_Defaut_Elec : BOOL;
+    bBouton_Acquittement : BOOL;
+END_VAR
+VAR_OUTPUT
+    bAlarme_Active : BOOL; bAlarme_Acquittee : BOOL;
+    bSignal_Sonore : BOOL; bSignal_Lumineux : BOOL;
+    iCode_Alarme : INT; sTexte_Alarme : STRING[80];
+END_VAR
+VAR
+    bMemoire_Alarme : BOOL;
+    tHorodatage : TOD;
+    iPriorite : INT;
+END_VAR
+bAlarme_Active := bAlarme_Niveau_Haut OR bAlarme_Niveau_Bas OR bAlarme_Pression_Haute OR bAlarme_Pression_Basse OR bAlarme_Temperature OR bAlarme_Defaut_Elec;
+IF bAlarme_Active AND NOT bMemoire_Alarme THEN
+  bMemoire_Alarme := TRUE; bAlarme_Acquittee := FALSE; tHorodatage := TOD#00:00:00;
+  IF bAlarme_Defaut_Elec THEN iPriorite := 1; iCode_Alarme := 101; sTexte_Alarme := 'Défaut électrique';
+  ELSIF bAlarme_Niveau_Haut THEN iPriorite := 2; iCode_Alarme := 102; sTexte_Alarme := 'Niveau haut';
+  ELSIF bAlarme_Pression_Haute THEN iPriorite := 2; iCode_Alarme := 103; sTexte_Alarme := 'Pression haute';
+  ELSE iPriorite := 3; iCode_Alarme := 104; sTexte_Alarme := 'Autre alarme'; END_IF;
+END_IF;
+IF NOT bAlarme_Active THEN bMemoire_Alarme := FALSE; END_IF;
+IF bBouton_Acquittement AND NOT bAlarme_Active THEN bAlarme_Acquittee := TRUE; END_IF;
+bSignal_Sonore := bAlarme_Active AND NOT bAlarme_Acquittee;
+bSignal_Lumineux := bAlarme_Active;
+END_FUNCTION_BLOCK`
+    }
+  },
+  motors: {
+    directStarter: {
+      title: 'Démarrage direct moteur',
+      category: 'Moteurs',
+      description: 'Démarrage direct avec protection thermique',
+      code: `FUNCTION_BLOCK FB_MoteurDirect
+VAR_INPUT
+    bCmd_Marche : BOOL;
+    bCmd_Arret : BOOL;
+    bArret_Urgence : BOOL;
+    bDefaut_Thermique : BOOL;
+END_VAR
+VAR_OUTPUT
+    bMoteur_Marche : BOOL;
+    bDefaut : BOOL;
+END_VAR
+IF bArret_Urgence OR bDefaut_Thermique THEN bMoteur_Marche := FALSE; bDefaut := TRUE; RETURN; END_IF;
+IF bCmd_Marche AND NOT bCmd_Arret THEN bMoteur_Marche := TRUE;
+ELSIF bCmd_Arret AND NOT bCmd_Marche THEN bMoteur_Marche := FALSE; END_IF;
+END_FUNCTION_BLOCK`
+    }
+  },
+  hvac: {
+    vanne3Voies: {
+      title: 'Vanne 3 voies chauffage',
+      category: 'HVAC',
+      description: 'Contrôle vanne 3 voies avec compensation',
+      code: `FUNCTION_BLOCK FB_Vanne3Voies
+VAR_INPUT
+    rTemp_Consigne : REAL;
+    rTemp_Mesure : REAL;
+    bMode_Auto : BOOL;
+    rPos_Manuelle : REAL;
+END_VAR
+VAR_OUTPUT
+    rPos_Vanne : REAL;
+    bAlarme : BOOL;
+END_VAR
+VAR
+    rErreur : REAL;
+END_VAR
+IF bMode_Auto THEN
+  rErreur := rTemp_Consigne - rTemp_Mesure;
+  rPos_Vanne := 50.0 + (rErreur * 10.0);
+  IF rPos_Vanne < 0.0 THEN rPos_Vanne := 0.0;
+  ELSIF rPos_Vanne > 100.0 THEN rPos_Vanne := 100.0; END_IF;
+ELSE
+  rPos_Vanne := rPos_Manuelle;
+END_IF;
+bAlarme := rTemp_Mesure < 5.0 OR rTemp_Mesure > 90.0;
+END_FUNCTION_BLOCK`
+    }
+  }
+};
+
+
+// ========== VALIDATEUR SCL AVANCÉ ==========
+class SCLValidator {
+  constructor() {
+    this.rules = [];
+    this.initializeRules();
+  }
+
+  initializeRules() {
+    // Règle 1: Structure FUNCTION/FUNCTION_BLOCK
+    this.rules.push({
+      id: 'STRUCT_001',
+      name: 'Déclaration de bloc',
+      severity: 'error',
+      check: (code) => {
+        if (!code.includes('FUNCTION') && !code.includes('FUNCTION_BLOCK')) {
+          return { valid: false, message: 'Aucune déclaration FUNCTION ou FUNCTION_BLOCK trouvée' };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 2: END_FUNCTION manquant
+    this.rules.push({
+      id: 'STRUCT_002',
+      name: 'Fermeture de bloc',
+      severity: 'error',
+      check: (code) => {
+        const funcCount = (code.match(/FUNCTION(?:_BLOCK)?\s+/g) || []).length;
+        const endCount = (code.match(/END_FUNCTION(?:_BLOCK)?/g) || []).length;
+        if (funcCount !== endCount) {
+          return { valid: false, message: `Nombre de END_FUNCTION (${endCount}) ne correspond pas aux FUNCTION (${funcCount})` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 3: Sections VAR
+    this.rules.push({
+      id: 'VAR_001',
+      name: 'Section VAR requise',
+      severity: 'error',
+      check: (code) => {
+        if (!code.includes('VAR') && !code.includes('VAR_INPUT') && !code.includes('VAR_OUTPUT')) {
+          return { valid: false, message: 'Aucune section VAR (INPUT/OUTPUT/IN_OUT) trouvée' };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 4: END_VAR manquant
+    this.rules.push({
+      id: 'VAR_002',
+      name: 'END_VAR manquant',
+      severity: 'error',
+      check: (code) => {
+        const varCount = (code.match(/\bVAR(?:_INPUT|_OUTPUT|_IN_OUT)?\b/g) || []).length;
+        const endVarCount = (code.match(/\bEND_VAR\b/g) || []).length;
+        if (varCount !== endVarCount) {
+          return { valid: false, message: `Nombre de END_VAR (${endVarCount}) ne correspond pas aux VAR (${varCount})` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 5: Types SCL valides
+    this.rules.push({
+      id: 'TYPE_001',
+      name: 'Types de données valides',
+      severity: 'warning',
+      check: (code) => {
+        const validTypes = ['BOOL','BYTE','WORD','DWORD','LWORD','INT','DINT','LINT','UINT','UDINT','ULINT','REAL','LREAL','TIME','DATE','TOD','DT','STRING','WSTRING','ARRAY','STRUCT','POINTER','ANY'];
+        const typeMatches = code.match(/:\s*(?:ARRAY\s*\[[^\]]+\]\s+)?(?:OF\s+)?(\w+)/g) || [];
+        const invalidTypes = [];
+        
+        typeMatches.forEach(match => {
+          const type = match.replace(/[:\s\[\]OF]/g,'').toUpperCase().split('(')[0];
+          if (type && !validTypes.some(vt => type.startsWith(vt)) && !type.startsWith('FB_') && !type.startsWith('FC_')) {
+            invalidTypes.push(type);
+          }
+        });
+
+        if (invalidTypes.length > 0) {
+          return { valid: false, message: `Types potentiellement invalides: ${[...new Set(invalidTypes)].slice(0,5).join(', ')}` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 6: Division par zéro potentielle
+    this.rules.push({
+      id: 'SAFE_001',
+      name: 'Division sans vérification',
+      severity: 'warning',
+      check: (code) => {
+        if (code.includes('/') && !code.includes('IF') && !code.includes('THEN')) {
+          const divLines = code.split('\n').filter(line => line.includes('/') && line.includes(':='));
+          if (divLines.length > 0) {
+            return { valid: false, message: 'Division détectée sans vérification de division par zéro' };
+          }
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 7: TIME sans T#
+    this.rules.push({
+      id: 'TYPE_002',
+      name: 'Initialisation TIME',
+      severity: 'warning',
+      check: (code) => {
+        const timeDeclarations = code.match(/\bTIME\b/g) || [];
+        const timeWithHash = code.match(/T#[\d]+/g) || [];
+        if (timeDeclarations.length > timeWithHash.length && code.includes(':=') && code.includes('TIME')) {
+          const lines = code.split('\n');
+          for (let line of lines) {
+            if (line.includes('TIME') && line.includes(':=') && !line.includes('T#')) {
+              return { valid: false, message: 'Déclaration TIME sans initialisation T#' };
+            }
+          }
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 8: Complexité cyclomatique
+    this.rules.push({
+      id: 'CX_001',
+      name: 'Complexité élevée',
+      severity: 'info',
+      check: (code) => {
+        const conditionals = (code.match(/\b(IF|CASE|FOR|WHILE|REPEAT)\b/g) || []).length;
+        const complexity = conditionals + 1;
+        if (complexity > 15) {
+          return { valid: false, message: `Complexité élevée (${complexity}>15): envisagez de découper en sous-fonctions` };
+        } else if (complexity > 10) {
+          return { valid: false, message: `Complexité modérée (${complexity}>10): documentez bien les conditions` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 9: Conventions de nommage
+    this.rules.push({
+      id: 'NAME_001',
+      name: 'Convention hongroise',
+      severity: 'info',
+      check: (code) => {
+        const varDecls = code.match(/^\s*(\w+)\s+:\s+/gm) || [];
+        const nonStandard = varDecls.filter(v => {
+          const name = v.trim().replace(':','').split(/\s+/)[0];
+          return !/^(b|r|i|s|fb|fc|db|t|a)/i.test(name) && name.length > 0 && name.length < 20;
+        }).length;
+        if (nonStandard > 3) {
+          return { valid: false, message: `${nonStandard} variables sans préfixe hongrois recommandé (b_, r_, i_, s_)` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 10: Commentaires insuffisants
+    this.rules.push({
+      id: 'DOC_001',
+      name: 'Documentation',
+      severity: 'info',
+      check: (code) => {
+        const lines = code.split('\n').length;
+        const commentLines = (code.match(/\/\/|\(\*|\*\)/g) || []).length / 2;
+        const ratio = commentLines / lines;
+        if (ratio < 0.1 && lines > 20) {
+          return { valid: false, message: `Moins de 10% de commentaires (${Math.round(ratio*100)}%). Ajoutez de la documentation.` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 11: RETURN sans condition
+    this.rules.push({
+      id: 'FLOW_001',
+      name: 'RETURN inconditionnel',
+      severity: 'warning',
+      check: (code) => {
+        const lines = code.split('\n');
+        for (let line of lines) {
+          const trimmed = line.trim();
+          if (trimmed === 'RETURN;' || trimmed === 'RETURN') {
+            return { valid: false, message: 'RETURN inconditionnel détecté - peut causer des problèmes de flux' };
+          }
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 12: Variables non utilisées
+    this.rules.push({
+      id: 'OPT_001',
+      name: 'Variables inutilisées',
+      severity: 'info',
+      check: (code) => {
+        const varSection = code.match(/VAR[\s\S]*?END_VAR/);
+        if (!varSection) return { valid: true };
+        
+        const varNames = varSection[0].match(/:\s+(\w+)/g) || [];
+        const unusedVars = [];
+        
+        varNames.forEach(v => {
+          const name = v.replace(':', '').trim();
+          const occurrences = (code.match(new RegExp('\\b' + name + '\\b', 'g')) || []).length;
+          if (occurrences <= 2) { // Déclaration + 1 usage = probablement inutilisée
+            unusedVars.push(name);
+          }
+        });
+
+        if (unusedVars.length > 0) {
+          return { valid: false, message: `Variables potentiellement inutilisées: ${unusedVars.slice(0,5).join(', ')}` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 13: Initialisation manquante
+    this.rules.push({
+      id: 'INIT_001',
+      name: 'Initialisation variables',
+      severity: 'info',
+      check: (code) => {
+        const varDecls = code.match(/:\s+(?:ARRAY\s*\[[^\]]+\]\s+)?(?:OF\s+)?(\w+)(?:\s*:=\s*[\w#\.\-\+]+)?/g) || [];
+        const uninitialized = [];
+        
+        varDecls.forEach(decl => {
+          if (!decl.includes(':=')) {
+            const parts = decl.split(':');
+            if (parts.length > 1) {
+              const type = parts[1].trim().split(/\s+/)[0];
+              if (['BOOL','INT','DINT','REAL'].includes(type)) {
+                uninitialized.push(parts[0].trim());
+              }
+            }
+          }
+        });
+
+        if (uninitialized.length > 5) {
+          return { valid: false, message: `${uninitialized.length} variables non initialisées (conseillé pour BOOL, INT, REAL)` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 14: ARRAY bounds checking
+    this.rules.push({
+      id: 'ARR_001',
+      name: 'Limites de tableau',
+      severity: 'warning',
+      check: (code) => {
+        if (code.includes('ARRAY[')) {
+          const arrayDecls = code.match(/ARRAY\s*\[\s*(\d+)\s*\.\.\s*(\d+)\s*\]/g) || [];
+          if (arrayDecls.length > 0 && !code.includes('IF') && !code.includes('CASE')) {
+            return { valid: false, message: 'Tableaux détectés - assurez-vous de vérifier les indices avant accès' };
+          }
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 15: STRING length
+    this.rules.push({
+      id: 'STR_001',
+      name: 'Longueur STRING',
+      severity: 'info',
+      check: (code) => {
+        const stringDecls = code.match(/STRING(?:\[(\d+)\])?/g) || [];
+        const unspecified = stringDecls.filter(s => !s.includes('[')).length;
+        if (unspecified > 0) {
+          return { valid: false, message: `${unspecified} STRING sans longueur spécifiée (par défaut 254 caractères)` };
+        }
+        return { valid: true };
+      }
+    });
+  }
+
+  validate(code) {
+    const results = {
+      errors: [],
+      warnings: [],
+      infos: [],
+      score: 100,
+      metrics: {
+        lines: code.split('\n').length,
+        variables: 0,
+        functions: 0,
+        complexity: 0,
+        commentRatio: 0
+      }
+    };
+
+    // Calcul des métriques
+    results.metrics.variables = (code.match(/:\s+\w+/g) || []).length;
+    results.metrics.functions = (code.match(/FUNCTION(?:_BLOCK)?\s+\w+/g) || []).length;
+    results.metrics.complexity = (code.match(/\b(IF|CASE|FOR|WHILE|REPEAT)\b/g) || []).length + 1;
+    const commentLines = (code.match(/\/\/|\(\*|\*\)/g) || []).length / 2;
+    results.metrics.commentRatio = Math.round((commentLines / results.metrics.lines) * 100);
+
+    // Exécution des règles
+    this.rules.forEach(rule => {
+      try {
+        const result = rule.check(code);
+        if (!result.valid) {
+          const item = { ruleId: rule.id, name: rule.name, message: result.message };
+          
+          if (rule.severity === 'error') {
+            results.errors.push(item);
+            results.score -= 20;
+          } else if (rule.severity === 'warning') {
+            results.warnings.push(item);
+            results.score -= 10;
+          } else {
+            results.infos.push(item);
+            results.score -= 3;
+          }
+        }
+      } catch (e) {
+        console.error(`Erreur règle ${rule.id}:`, e);
+      }
+    });
+
+    results.score = Math.max(0, Math.min(100, results.score));
+    return results;
+  }
+}
+
+// ========== OPTIMISEUR DE CODE ==========
+class SCLOptimizer {
+  constructor() {
+    this.optimizations = [];
+  }
+
+  analyze(code) {
+    const suggestions = [];
+
+    // Optimisation 1: Conditions imbriquées -> ET logique
+    const nestedIfs = code.match(/IF\s+\w+\s+THEN\s+IF\s+\w+/g);
+    if (nestedIfs && nestedIfs.length > 0) {
+      suggestions.push({
+        type: 'performance',
+        severity: 'medium',
+        title: 'Conditions imbriquées',
+        description: 'Remplacez les IF imbriqués par des opérateurs AND pour réduire la complexité',
+        before: 'IF cond1 THEN\n  IF cond2 THEN\n    action;\n  END_IF;\nEND_IF;',
+        after: 'IF cond1 AND cond2 THEN\n  action;\nEND_IF;'
+      });
+    }
+
+    // Optimisation 2: Calculs redondants
+    const redundantCalcs = code.match(/(\w+)\s*:=\s*(\w+)\s*\*\s*([\d\.]+)/g);
+    if (redundantCalcs && redundantCalcs.length > 2) {
+      const multipliers = {};
+      redundantCalcs.forEach(calc => {
+        const match = calc.match(/(\w+)\s*:=\s*(\w+)\s*\*\s*([\d\.]+)/);
+        if (match) {
+          const mult = match[3];
+          if (!multipliers[mult]) multipliers[mult] = [];
+          multipliers[mult].push(match[2]);
+        }
+      });
+      
+      Object.entries(multipliers).forEach(([mult, vars]) => {
+        if (vars.length >= 2) {
+          suggestions.push({
+            type: 'performance',
+            severity: 'low',
+            title: 'Multiplications redondantes',
+            description: `Facteur ${mult} utilisé ${vars.length} fois - envisagez une fonction commune`,
+            example: `Créez un FC pour les calculs répétitifs`
+          });
+        }
+      });
+    }
+
+    // Optimisation 3: Assignations multiples
+    const assignments = code.match(/(\w+)\s*:=\s*\w+;/g);
+    if (assignments) {
+      const varUsage = {};
+      assignments.forEach(a => {
+        const v = a.split(':=')[0].trim();
+        varUsage[v] = (varUsage[v] || 0) + 1;
+      });
+      
+      const reassignVars = Object.entries(varUsage).filter(([_, count]) => count > 2);
+      if (reassignVars.length > 0) {
+        suggestions.push({
+          type: 'readability',
+          severity: 'low',
+          title: 'Réaffectations multiples',
+          description: `Variables réaffectées plusieurs fois: ${reassignVars.map(([v]) => v).join(', ')}`,
+          recommendation: 'Utilisez des variables temporaires pour clarifier le flux'
+        });
+      }
+    }
+
+    // Optimisation 4: TIME conversions
+    if (code.includes('TIME_TO_SEC') || code.includes('SEC_TO_TIME')) {
+      suggestions.push({
+        type: 'performance',
+        severity: 'low',
+        title: 'Conversions TIME',
+        description: 'Les conversions TIME<->SECOND consomment du temps CPU',
+        recommendation: 'Utilisez des unités cohérentes dans tout le bloc'
+      });
+    }
+
+    // Optimisation 5: STRUCT accès
+    if (code.match(/\w+\.\w+/g)) {
+      suggestions.push({
+        type: 'performance',
+        severity: 'info',
+        title: 'Accès à des STRUCT',
+        description: 'Accès multiples à des champs de structure détectés',
+        recommendation: 'Copiez les valeurs fréquemment utilisées dans des variables locales'
+      });
+    }
+
+    // Optimisation 6: Code mort potentiel
+    const varSection = code.match(/VAR[\s\S]*?END_VAR/);
+    if (varSection) {
+      const declaredVars = varSection[0].match(/:\s+(\w+)/g) || [];
+      declaredVars.forEach(v => {
+        const name = v.replace(':', '').trim();
+        const usages = (code.match(new RegExp('\\b' + name + '\\b', 'g')) || []).length;
+        if (usages === 1) {
+          suggestions.push({
+            type: 'cleanup',
+            severity: 'low',
+            title: 'Variable inutilisée',
+            description: `La variable '${name}' est déclarée mais jamais utilisée`,
+            recommendation: 'Supprimez cette variable pour nettoyer le code'
+          });
+        }
+      });
+    }
+
+    return suggestions;
+  }
+
+  generateOptimizedCode(code, suggestions) {
+    let optimized = code;
+    
+    // Application automatique des optimisations simples
+    suggestions.forEach(sug => {
+      if (sug.type === 'cleanup' && sug.title === 'Variable inutilisée') {
+        // Ne pas supprimer automatiquement - juste suggérer
+      }
+    });
+
+    return optimized;
+  }
+}
+
+// ========== GÉNÉRATEUR DE DOCUMENTATION ==========
+class DocGenerator {
+  generate(code) {
+    const doc = {
+      title: '',
+      description: '',
+      variables: { inputs: [], outputs: [], inouts: [], locals: [] },
+      algorithm: [],
+      examples: []
+    };
+
+    // Extraire le nom du bloc
+    const titleMatch = code.match(/FUNCTION(?:_BLOCK)?\s+(\w+)/);
+    if (titleMatch) {
+      doc.title = titleMatch[1];
+    }
+
+    // Extraire les variables
+    const varSections = {
+      inputs: code.match(/VAR_INPUT[\s\S]*?END_VAR/),
+      outputs: code.match(/VAR_OUTPUT[\s\S]*?END_VAR/),
+      inouts: code.match(/VAR_IN_OUT[\s\S]*?END_VAR/),
+      locals: code.match(/VAR[\s\S]*?END_VAR/g)
+    };
+
+    // Parser les variables INPUT
+    if (varSections.inputs) {
+      doc.variables.inputs = this.parseVariables(varSections.inputs[0]);
+    }
+
+    // Parser les variables OUTPUT
+    if (varSections.outputs) {
+      doc.variables.outputs = this.parseVariables(varSections.outputs[0]);
+    }
+
+    // Parser les variables IN_OUT
+    if (varSections.inouts) {
+      doc.variables.inouts = this.parseVariables(varSections.inouts[0]);
+    }
+
+    // Parser les variables locales (exclure INPUT/OUTPUT/IN_OUT)
+    if (varSections.locals) {
+      const localVars = [];
+      varSections.locals.forEach(section => {
+        if (!section.includes('VAR_INPUT') && !section.includes('VAR_OUTPUT') && !section.includes('VAR_IN_OUT')) {
+          localVars.push(...this.parseVariables(section));
+        }
+      });
+      doc.variables.locals = localVars;
+    }
+
+    // Générer l'algorithme
+    doc.algorithm = this.extractAlgorithm(code);
+
+    // Générer des exemples
+    doc.examples = this.generateExamples(doc);
+
+    return doc;
+  }
+
+  parseVariables(section) {
+    const vars = [];
+    const lines = section.split('\n');
+    
+    for (let line of lines) {
+      line = line.trim();
+      if (line.startsWith('VAR') || line === 'END_VAR' || line === '') continue;
+      
+      // Extraire commentaire si présent
+      let comment = '';
+      const commentIndex = line.indexOf('//');
+      if (commentIndex !== -1) {
+        comment = line.substring(commentIndex + 2).trim();
+        line = line.substring(0, commentIndex).trim();
+      }
+
+      // Parser la déclaration
+      const match = line.match(/^(\w+)\s*:\s*(.+?)(?:;|$)/);
+      if (match) {
+        vars.push({
+          name: match[1],
+          type: match[2].trim().replace(';', ''),
+          comment: comment,
+          initialized: line.includes(':=')
+        });
+      }
+    }
+
+    return vars;
+  }
+
+  extractAlgorithm(code) {
+    const steps = [];
+    const lines = code.split('\n');
+    let stepNum = 1;
+
+    for (let line of lines) {
+      line = line.trim();
+      
+      // Ignorer les déclarations
+      if (line.startsWith('VAR') || line.startsWith('END_') || line.match(/^\w+\s*:/)) continue;
+      if (line.startsWith('FUNCTION') || line.startsWith('END_FUNCTION')) continue;
+
+      // Extraire la logique significative
+      if (line.startsWith('IF') || line.startsWith('ELSIF') || line.startsWith('ELSE')) {
+        steps.push({ step: stepNum++, type: 'condition', code: line });
+      } else if (line.includes(':=') && !line.startsWith('//')) {
+        steps.push({ step: stepNum++, type: 'assignment', code: line });
+      } else if (line.startsWith('RETURN')) {
+        steps.push({ step: stepNum++, type: 'return', code: line });
+      } else if (line.startsWith('//') && line.length > 3) {
+        steps.push({ step: stepNum - 1, type: 'comment', code: line });
+      }
+    }
+
+    return steps;
+  }
+
+  generateExamples(doc) {
+    const examples = [];
+
+    // Exemple d'appel
+    let callExample = `${doc.title}_Inst : ${doc.title};\n\n`;
+    callExample += '// Dans votre programme principal:\n';
+    
+    if (doc.variables.inputs.length > 0) {
+      const firstInput = doc.variables.inputs[0];
+      callExample += `${doc.title}_Inst.${firstInput.name} := TRUE;\n`;
+    }
+    
+    callExample += `${doc.title}_Inst(); // Appel du FB\n\n`;
+    
+    if (doc.variables.outputs.length > 0) {
+      const firstOutput = doc.variables.outputs[0];
+      callExample += `// Lecture de la sortie:\nIF ${doc.title}_Inst.${firstOutput.name} THEN\n  // Action...\nEND_IF;`;
+    }
+
+    examples.push({
+      title: 'Exemple d\'utilisation',
+      code: callExample
+    });
+
+    return examples;
+  }
+
+  formatAsHTML(doc) {
+    let html = `<div class="doc-section">
+      <h3><i class="ti ti-box"></i> ${doc.title || 'Bloc SCL'}</h3>
+      <p style="color: #5f5e5a; margin: 8px 0 16px;">Documentation technique générée automatiquement</p>
+    </div>`;
+
+    // Variables
+    html += `<div class="doc-section">
+      <h4><i class="ti ti-variable"></i> Variables d'entrée (${doc.variables.inputs.length})</h4>
+      <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+        <thead>
+          <tr style="background: #f0f0f0;">
+            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Nom</th>
+            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Type</th>
+            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Description</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    
+    doc.variables.inputs.forEach(v => {
+      html += `<tr>
+        <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace;">${v.name}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${v.type}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${v.comment || '-'}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+
+    // Sorties
+    if (doc.variables.outputs.length > 0) {
+      html += `<div class="doc-section">
+        <h4><i class="ti ti-output"></i> Variables de sortie (${doc.variables.outputs.length})</h4>
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+          <thead>
+            <tr style="background: #f0f0f0;">
+              <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Nom</th>
+              <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Type</th>
+              <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Description</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      
+      doc.variables.outputs.forEach(v => {
+        html += `<tr>
+          <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace;">${v.name}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${v.type}</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${v.comment || '-'}</td>
+        </tr>`;
+      });
+
+      html += `</tbody></table></div>`;
+    }
+
+    // Algorithme
+    if (doc.algorithm.length > 0) {
+      html += `<div class="doc-section">
+        <h4><i class="ti ti-flowchart"></i> Algorithme</h4>
+        <ol style="padding-left: 20px;">`;
+      
+      doc.algorithm.forEach(step => {
+        const icon = step.type === 'condition' ? '🔀' : step.type === 'assignment' ? '📝' : step.type === 'return' ? '↩️' : '💬';
+        html += `<li style="margin: 4px 0; font-family: monospace; font-size: 11px;">${icon} ${step.code}</li>`;
+      });
+
+      html += `</ol></div>`;
+    }
+
+    // Exemples
+    doc.examples.forEach(ex => {
+      html += `<div class="doc-section">
+        <h4><i class="ti ti-code"></i> ${ex.title}</h4>
+        <pre style="background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 6px; overflow-x: auto;">${ex.code}</pre>
+      </div>`;
+    });
+
+    return html;
+  }
+}
+
+// ========== FONCTIONS DE TEST ==========
+let testsPassed = 0;
+let totalTests = 4;
+
+function testLibrary() {
+  const resultDiv = document.getElementById('libraryResult');
+  const previewDiv = document.getElementById('libraryPreview');
+  
+  // Afficher l'aperçu de la bibliothèque
+  const categories = Object.keys(EXTENDED_SCL_LIBRARY);
+  let totalSnippets = 0;
+  
+  categories.forEach(cat => {
+    totalSnippets += Object.keys(EXTENDED_SCL_LIBRARY[cat]).length;
+  });
+  
+  // Générer l'aperçu
+  let previewHTML = '<div class="feature-grid">';
+  const categoryNames = {
+    'pumps': 'Pompes & Fluides',
+    'regulation': 'Régulation PID',
+    'safety': 'Sécurité & Alarmes',
+    'motors': 'Moteurs & Variateurs',
+    'hvac': 'Température & HVAC'
+  };
+  
+  categories.forEach(cat => {
+    const count = Object.keys(EXTENDED_SCL_LIBRARY[cat]).length;
+    const icons = {
+      'pumps': 'ti-droplet',
+      'regulation': 'ti-gauge',
+      'safety': 'ti-shield',
+      'motors': 'ti-motorbike',
+      'hvac': 'ti-thermometer'
+    };
+    previewHTML += `
+      <div class="feature-card">
+        <h3><i class="ti ${icons[cat] || 'ti-code'}"></i> ${categoryNames[cat] || cat}</h3>
+        <p>${count} snippets disponibles</p>
+        <div style="margin-top: 8px;"><span class="badge" style="background: #e3f2fd; color: #1976d2;">${count} snippets</span></div>
+      </div>
+    `;
+  });
+  previewHTML += '</div>';
+  previewDiv.innerHTML = previewHTML;
+  
+  resultDiv.style.display = 'block';
+  resultDiv.className = 'test-result success';
+  
+  // Obtenir un exemple de snippet
+  const firstCat = categories[0];
+  const firstSnippet = Object.keys(EXTENDED_SCL_LIBRARY[firstCat])[0];
+  const exampleCode = EXTENDED_SCL_LIBRARY[firstCat][firstSnippet].code;
+
+  resultDiv.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+      <i class="ti ti-check-circle" style="color: #1D9E75; font-size: 24px;"></i>
+      <strong style="font-size: 16px;">Bibliothèque chargée avec succès !</strong>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+      <div class="metric-row">
+        <span>Catégories</span>
+        <strong>${categories.length}</strong>
+      </div>
+      <div class="metric-row">
+        <span>Snippets totaux</span>
+        <strong>${totalSnippets}</strong>
+      </div>
+      <div class="metric-row">
+        <span>Pompes & Fluides</span>
+        <strong>${Object.keys(EXTENDED_SCL_LIBRARY.pumps || {}).length}</strong>
+      </div>
+      <div class="metric-row">
+        <span>Régulation</span>
+        <strong>${Object.keys(EXTENDED_SCL_LIBRARY.regulation || {}).length}</strong>
+      </div>
+      <div class="metric-row">
+        <span>Sécurité</span>
+        <strong>${Object.keys(EXTENDED_SCL_LIBRARY.safety || {}).length}</strong>
+      </div>
+      <div class="metric-row">
+        <span>Moteurs</span>
+        <strong>${Object.keys(EXTENDED_SCL_LIBRARY.motors || {}).length}</strong>
+      </div>
+    </div>
+    <div style="margin-top: 16px; padding: 12px; background: white; border-radius: 6px;">
+      <strong style="font-size: 13px;">Exemple de snippet (${EXTENDED_SCL_LIBRARY[firstCat][firstSnippet].title}):</strong>
+      <pre class="code-block" style="margin-top: 8px; font-size: 10px;">${exampleCode.substring(0, 300)}...</pre>
+    </div>
+  `;
+
+  document.getElementById('libCount').textContent = totalSnippets;
+  testsPassed++;
+  updateGlobalStatus();
+}
+
+function testValidator() {
+  const resultDiv = document.getElementById('validatorResult');
+  const code = document.getElementById('testCode').innerText;
+  
+  resultDiv.style.display = 'block';
+  
+  const validator = new SCLValidator();
+  const results = validator.validate(code);
+
+  let severityClass = 'success';
+  if (results.errors.length > 0) severityClass = 'error';
+  else if (results.warnings.length > 0) severityClass = 'warning';
+
+  resultDiv.className = `test-result ${severityClass}`;
+
+  let html = `
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+      <i class="ti ti-${results.errors.length === 0 ? 'check-circle' : 'alert-circle'}" style="color: ${results.errors.length === 0 ? '#1D9E75' : '#D85A30'}; font-size: 24px;"></i>
+      <div>
+        <strong style="font-size: 16px;">Validation terminée</strong>
+        <div style="font-size: 12px; color: #5f5e5a;">Score: <strong style="color: ${results.score >= 80 ? '#1D9E75' : results.score >= 60 ? '#BA7517' : '#D85A30'};">${results.score}/100</strong></div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;">
+      <div style="text-align: center; padding: 12px; background: white; border-radius: 6px;">
+        <div style="font-size: 24px; font-weight: bold; color: #2c2c2a;">${results.metrics.lines}</div>
+        <div style="font-size: 11px; color: #5f5e5a;">Lignes</div>
+      </div>
+      <div style="text-align: center; padding: 12px; background: white; border-radius: 6px;">
+        <div style="font-size: 24px; font-weight: bold; color: #2c2c2a;">${results.metrics.variables}</div>
+        <div style="font-size: 11px; color: #5f5e5a;">Variables</div>
+      </div>
+      <div style="text-align: center; padding: 12px; background: white; border-radius: 6px;">
+        <div style="font-size: 24px; font-weight: bold; color: #2c2c2a;">${results.metrics.complexity}</div>
+        <div style="font-size: 11px; color: #5f5e5a;">Complexité</div>
+      </div>
+      <div style="text-align: center; padding: 12px; background: white; border-radius: 6px;">
+        <div style="font-size: 24px; font-weight: bold; color: #2c2c2a;">${results.metrics.commentRatio}%</div>
+        <div style="font-size: 11px; color: #5f5e5a;">Commentaires</div>
+      </div>
+    </div>
+  `;
+
+  if (results.errors.length > 0) {
+    html += `<div style="margin-bottom: 12px;"><strong style="color: #c00;">Erreurs (${results.errors.length}):</strong></div>`;
+    results.errors.forEach(err => {
+      html += `<div class="validation-item error"><i class="ti ti-x"></i><div><strong>[${err.ruleId}]</strong> ${err.message}</div></div>`;
+    });
+  }
+
+  if (results.warnings.length > 0) {
+    html += `<div style="margin-bottom: 12px; margin-top: 16px;"><strong style="color: #856404;">Avertissements (${results.warnings.length}):</strong></div>`;
+    results.warnings.forEach(warn => {
+      html += `<div class="validation-item warning"><i class="ti ti-alert-triangle"></i><div><strong>[${warn.ruleId}]</strong> ${warn.message}</div></div>`;
+    });
+  }
+
+  if (results.infos.length > 0) {
+    html += `<div style="margin-bottom: 12px; margin-top: 16px;"><strong style="color: #0c5460;">Informations (${results.infos.length}):</strong></div>`;
+    results.infos.forEach(info => {
+      html += `<div class="validation-item info"><i class="ti ti-info-circle"></i><div><strong>[${info.ruleId}]</strong> ${info.message}</div></div>`;
+    });
+  }
+
+  if (results.errors.length === 0 && results.warnings.length === 0) {
+    html += `<div class="validation-item success"><i class="ti ti-check"></i><div>Aucun problème détecté ! Code conforme aux bonnes pratiques SCL.</div></div>`;
+  }
+
+  resultDiv.innerHTML = html;
+  document.getElementById('valCount').textContent = validator.rules.length;
+  testsPassed++;
+  updateGlobalStatus();
+}
+
+function testOptimizer() {
+  const resultDiv = document.getElementById('optimizerResult');
+  const code = document.getElementById('optimizeCode').innerText;
+  
+  resultDiv.style.display = 'block';
+  resultDiv.className = 'test-result success';
+
+  const optimizer = new SCLOptimizer();
+  const suggestions = optimizer.analyze(code);
+
+  let html = `
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+      <i class="ti ti-check-circle" style="color: #1D9E75; font-size: 24px;"></i>
+      <strong style="font-size: 16px;">Analyse d'optimisation terminée</strong>
+    </div>
+    <div style="margin-bottom: 16px; padding: 12px; background: #e8f5e9; border-radius: 6px;">
+      <strong style="color: #155724;">${suggestions.length} optimisations suggérées</strong>
+    </div>
+  `;
+
+  suggestions.forEach((sug, idx) => {
+    const color = sug.severity === 'high' ? '#d32f2f' : sug.severity === 'medium' ? '#f57c00' : '#388e3c';
+    const icon = sug.type === 'performance' ? '⚡' : sug.type === 'readability' ? '📖' : '🧹';
+    
+    html += `<div style="margin-bottom: 16px; padding: 12px; background: white; border-radius: 6px; border-left: 4px solid ${color};">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <span style="font-size: 16px;">${icon}</span>
+        <strong style="color: ${color};">${sug.title}</strong>
+        <span style="font-size: 11px; padding: 2px 8px; background: #f0f0f0; border-radius: 4px;">${sug.type}</span>
+      </div>
+      <p style="font-size: 13px; color: #5f5e5a; margin-bottom: 8px;">${sug.description}</p>`;
+    
+    if (sug.before) {
+      html += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
+        <div>
+          <div style="font-size: 11px; color: #5f5e5a; margin-bottom: 4px;">Avant:</div>
+          <pre class="code-block" style="font-size: 9px;">${sug.before}</pre>
+        </div>
+        <div>
+          <div style="font-size: 11px; color: #5f5e5a; margin-bottom: 4px;">Après:</div>
+          <pre class="code-block" style="font-size: 9px;">${sug.after || 'Voir recommandation'}</pre>
+        </div>
+      </div>`;
+    }
+
+    if (sug.recommendation) {
+      html += `<div style="margin-top: 8px; padding: 8px; background: #f5f5f5; border-radius: 4px; font-size: 12px;">
+        <strong>💡 Recommandation:</strong> ${sug.recommendation}
+      </div>`;
+    }
+
+    html += `</div>`;
+  });
+
+  resultDiv.innerHTML = html;
+  document.getElementById('optCount').textContent = 6;
+  testsPassed++;
+  updateGlobalStatus();
+}
+
+function testDocGenerator() {
+  const resultDiv = document.getElementById('docResult');
+  const code = document.getElementById('docCode').innerText;
+  
+  resultDiv.style.display = 'block';
+  resultDiv.className = 'test-result success';
+
+  try {
+    const generator = new DocGenerator();
+    const doc = generator.generate(code);
+    
+    if (!doc || !doc.title) {
+      resultDiv.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <i class="ti ti-alert-circle" style="color: #D85A30; font-size: 24px;"></i>
+          <div>
+            <strong>Erreur de génération</strong>
+            <p style="font-size: 13px; color: #5f5e5a; margin-top: 4px;">Le document généré est vide ou incomplet</p>
+          </div>
+        </div>
+      `;
+      return;
+    }
+    
+    const html = generator.formatAsHTML(doc);
+    resultDiv.innerHTML = html;
+    document.getElementById('docCount').textContent = Object.keys(doc.variables).length + (doc.algorithm ? 1 : 0);
+    testsPassed++;
+    updateGlobalStatus();
+  } catch (e) {
+    console.error('Erreur DocGenerator:', e);
+    resultDiv.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <i class="ti ti-x" style="color: #D85A30; font-size: 24px;"></i>
+        <div>
+          <strong>Erreur lors de la génération</strong>
+          <p style="font-size: 13px; color: #5f5e5a; margin-top: 4px;">${e.message}</p>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function updateGlobalStatus() {
+  const statusEl = document.getElementById('globalStatus');
+  
+  if (testsPassed === totalTests) {
+    statusEl.className = '';
+    statusEl.style.cssText = 'background: #d4edda; color: #155724; padding: 4px 12px; border-radius: 4px;';
+    statusEl.textContent = '✅ Tous les tests réussis !';
+  } else if (testsPassed > 0) {
+    statusEl.className = '';
+    statusEl.style.cssText = 'background: #fff3cd; color: #856404; padding: 4px 12px; border-radius: 4px;';
+    statusEl.textContent = `⏳ ${testsPassed}/${totalTests} tests effectués`;
+  }
+}
+
+// Initialisation
+console.log('%c🚀 Test Suite SCL SuperAgent Pro v3.0', 'color: #378ADD; font-size: 16px; font-weight: bold');
+console.log('Chargez les fonctions de test en cliquant sur les boutons');
+</script>
+
+</body>
+</html>

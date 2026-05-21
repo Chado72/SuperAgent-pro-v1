@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Validateur SCL Standalone</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; background: #f5f5f5; }
+  .container { max-width: 900px; margin: 0 auto; background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  h1 { color: #378ADD; margin-bottom: 20px; }
+  textarea { width: 100%; height: 300px; font-family: monospace; font-size: 12px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; }
+  button { padding: 12px 24px; background: #378ADD; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; margin-top: 12px; }
+  button:hover { background: #2a6bb5; }
+  .result { margin-top: 20px; padding: 16px; background: #f8f8f6; border-radius: 6px; border: 1px solid #e0e0e0; }
+  .error { color: #D85A30; }
+  .warning { color: #BA7517; }
+  .success { color: #1D9E75; }
+  .rule-item { padding: 8px; margin: 4px 0; border-left: 3px solid #ccc; background: white; }
+  .rule-error { border-left-color: #D85A30; }
+  .rule-warning { border-left-color: #BA7517; }
+  .rule-success { border-left-color: #1D9E75; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔍 Test Validateur SCL Standalone</h1>
+  <p>Collez votre code SCL ci-dessous et cliquez sur "Valider"</p>
+  
+  <textarea id="sclCode">// Exemple de code SCL avec erreurs
+FUNCTION_BLOCK FB_Test
+VAR_INPUT
+    bStart : BOOL;
+    rValeur : REAL;
+END_VAR
+VAR_OUTPUT
+    bSortie : BOOL;
+    rResultat : REAL;
+END_VAR
+VAR
+    iCompteur : INT;
+END_VAR
+
+// Division par zéro potentielle
+rResultat := rValeur / 0;
+
+// TIME incorrect
+STATIC rTempo : TIME := 5000; END_VAR;
+
+IF bStart THEN
+    bSortie := TRUE;
+END_IF;
+
+END_FUNCTION_BLOCK</textarea>
+  
+  <button onclick="runValidation()">Valider le code SCL</button>
+  
+  <div id="result" class="result" style="display:none;"></div>
+</div>
+
+<script>
+class SCLValidator {
+  constructor() {
+    this.rules = [];
+    this.initializeRules();
+  }
+  
+  initializeRules() {
+    // Règle 1: Structure FUNCTION/FUNCTION_BLOCK
+    this.rules.push({
+      id: 'STRUCT_001',
+      name: 'Déclaration de bloc',
+      severity: 'error',
+      check: (code) => {
+        if (!code.includes('FUNCTION') && !code.includes('FUNCTION_BLOCK')) {
+          return { valid: false, message: 'Aucune déclaration FUNCTION ou FUNCTION_BLOCK trouvée' };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 2: END_FUNCTION manquant
+    this.rules.push({
+      id: 'STRUCT_002',
+      name: 'Fermeture de bloc',
+      severity: 'error',
+      check: (code) => {
+        const funcCount = (code.match(/FUNCTION(?:_BLOCK)?\s+/g) || []).length;
+        const endCount = (code.match(/END_FUNCTION(?:_BLOCK)?/g) || []).length;
+        if (funcCount !== endCount) {
+          return { valid: false, message: `Nombre de END_FUNCTION (${endCount}) ne correspond pas aux FUNCTION (${funcCount})` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 3: Sections VAR
+    this.rules.push({
+      id: 'VAR_001',
+      name: 'Section VAR requise',
+      severity: 'error',
+      check: (code) => {
+        if (!code.includes('VAR') && !code.includes('VAR_INPUT') && !code.includes('VAR_OUTPUT')) {
+          return { valid: false, message: 'Aucune section VAR (INPUT/OUTPUT/IN_OUT) trouvée' };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 4: END_VAR manquant
+    this.rules.push({
+      id: 'VAR_002',
+      name: 'END_VAR manquant',
+      severity: 'error',
+      check: (code) => {
+        const varCount = (code.match(/\bVAR(?:_INPUT|_OUTPUT|_IN_OUT)?\b/g) || []).length;
+        const endVarCount = (code.match(/\bEND_VAR\b/g) || []).length;
+        if (varCount !== endVarCount) {
+          return { valid: false, message: `Nombre de END_VAR (${endVarCount}) ne correspond pas aux VAR (${varCount})` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 5: Types SCL valides
+    this.rules.push({
+      id: 'TYPE_001',
+      name: 'Types de données valides',
+      severity: 'warning',
+      check: (code) => {
+        const validTypes = ['BOOL','BYTE','WORD','DWORD','LWORD','INT','DINT','LINT','UINT','UDINT','ULINT','REAL','LREAL','TIME','DATE','TOD','DT','STRING','WSTRING','ARRAY','STRUCT','POINTER','ANY'];
+        const typeMatches = code.match(/:\s*(?:ARRAY\s*\[[^\]]+\]\s+)?(?:OF\s+)?(\w+)/g) || [];
+        const invalidTypes = [];
+        
+        typeMatches.forEach(match => {
+          const type = match.replace(/:\s*/,'').replace(/ARRAY\s*\[[^\]]+\]\s+OF\s+/,'').trim().toUpperCase();
+          if (!validTypes.includes(type) && !type.startsWith('FB_') && !type.startsWith('FC_')) {
+            invalidTypes.push(type);
+          }
+        });
+        
+        if (invalidTypes.length > 0) {
+          return { valid: false, message: `Types inconnus: ${[...new Set(invalidTypes)].join(', ')}` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 6: Division par zéro
+    this.rules.push({
+      id: 'MATH_001',
+      name: 'Division par zéro',
+      severity: 'error',
+      check: (code) => {
+        if (/\/\s*0(?:\.0)?(?:\s|;|\))/g.test(code)) {
+          return { valid: false, message: 'Division par zéro détectée' };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 7: TIME sans T#
+    this.rules.push({
+      id: 'TIME_001',
+      name: 'Format TIME correct',
+      severity: 'warning',
+      check: (code) => {
+        const timeAssignments = code.match(/:\s*TIME\s*:=\s*(\d+)/g) || [];
+        if (timeAssignments.length > 0) {
+          return { valid: false, message: 'Valeur TIME doit utiliser T# (ex: T#5S)' };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 8: IF sans END_IF
+    this.rules.push({
+      id: 'CTRL_001',
+      name: 'Fermeture IF',
+      severity: 'error',
+      check: (code) => {
+        const ifCount = (code.match(/\bIF\b/g) || []).length;
+        const endifCount = (code.match(/\bEND_IF\b/g) || []).length;
+        if (ifCount !== endifCount) {
+          return { valid: false, message: `Nombre de END_IF (${endifCount}) ne correspond pas aux IF (${ifCount})` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 9: FOR sans END_FOR
+    this.rules.push({
+      id: 'CTRL_002',
+      name: 'Fermeture FOR',
+      severity: 'error',
+      check: (code) => {
+        const forCount = (code.match(/\bFOR\b/g) || []).length;
+        const endforCount = (code.match(/\bEND_FOR\b/g) || []).length;
+        if (forCount !== endforCount) {
+          return { valid: false, message: `Nombre de END_FOR (${endforCount}) ne correspond pas aux FOR (${forCount})` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 10: WHILE sans END_WHILE
+    this.rules.push({
+      id: 'CTRL_003',
+      name: 'Fermeture WHILE',
+      severity: 'error',
+      check: (code) => {
+        const whileCount = (code.match(/\bWHILE\b/g) || []).length;
+        const endwhileCount = (code.match(/\bEND_WHILE\b/g) || []).length;
+        if (whileCount !== endwhileCount) {
+          return { valid: false, message: `Nombre de END_WHILE (${endwhileCount}) ne correspond pas aux WHILE (${whileCount})` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 11: CASE sans END_CASE
+    this.rules.push({
+      id: 'CTRL_004',
+      name: 'Fermeture CASE',
+      severity: 'error',
+      check: (code) => {
+        const caseCount = (code.match(/\bCASE\b/g) || []).length;
+        const endcaseCount = (code.match(/\bEND_CASE\b/g) || []).length;
+        if (caseCount !== endcaseCount) {
+          return { valid: false, message: `Nombre de END_CASE (${endcaseCount}) ne correspond pas aux CASE (${caseCount})` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 12: Variables non utilisées (simple)
+    this.rules.push({
+      id: 'OPTIM_001',
+      name: 'Variables déclarées mais non utilisées',
+      severity: 'warning',
+      check: (code) => {
+        const varDeclarations = code.match(/(?:VAR_INPUT|VAR_OUTPUT|VAR_IN_OUT|VAR)\s*([\s\S]*?)END_VAR/g) || [];
+        const unusedVars = [];
+        
+        varDeclarations.forEach(section => {
+          const lines = section.split('\n');
+          lines.forEach(line => {
+            const match = line.match(/^\s*(\w+)\s*:/);
+            if (match) {
+              const varName = match[1];
+              const occurrences = (code.match(new RegExp('\\b' + varName + '\\b', 'g')) || []).length;
+              if (occurrences <= 2) { // Déclaration + 1 usage = potentiellement inutilisée
+                unusedVars.push(varName);
+              }
+            }
+          });
+        });
+        
+        if (unusedVars.length > 0) {
+          return { valid: false, message: `Variables potentiellement inutilisées: ${unusedVars.join(', ')}` };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 13: STRING sans taille
+    this.rules.push({
+      id: 'TYPE_002',
+      name: 'STRING avec taille',
+      severity: 'warning',
+      check: (code) => {
+        if (/\bSTRING\b(?!\[)/.test(code) && !/\bSTRING\[\d+\]/.test(code)) {
+          return { valid: false, message: 'STRING devrait avoir une taille (ex: STRING[80])' };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 14: RETURN hors FUNCTION
+    this.rules.push({
+      id: 'CTRL_005',
+      name: 'RETURN utilisé correctement',
+      severity: 'info',
+      check: (code) => {
+        if (/\bRETURN\b/.test(code) && !/\bFUNCTION(?:_BLOCK)?\b/.test(code)) {
+          return { valid: false, message: 'RETURN utilisé en dehors d\'un FUNCTION_BLOCK' };
+        }
+        return { valid: true };
+      }
+    });
+
+    // Règle 15: Commentaires manquants
+    this.rules.push({
+      id: 'DOC_001',
+      name: 'Documentation minimale',
+      severity: 'info',
+      check: (code) => {
+        const commentCount = (code.match(/\(\*[\s\S]*?\*\)|\/\/.*$/gm) || []).length;
+        if (commentCount === 0) {
+          return { valid: false, message: 'Aucun commentaire trouvé dans le code' };
+        }
+        return { valid: true };
+      }
+    });
+  }
+  
+  validate(code) {
+    const results = [];
+    
+    this.rules.forEach(rule => {
+      try {
+        const result = rule.check(code);
+        results.push({
+          ruleId: rule.id,
+          ruleName: rule.name,
+          severity: rule.severity,
+          valid: result.valid,
+          message: result.message || 'OK'
+        });
+      } catch (e) {
+        results.push({
+          ruleId: rule.id,
+          ruleName: rule.name,
+          severity: 'error',
+          valid: false,
+          message: `Erreur d'exécution: ${e.message}`
+        });
+      }
+    });
+    
+    return results;
+  }
+  
+  getSummary(results) {
+    const errors = results.filter(r => !r.valid && r.severity === 'error').length;
+    const warnings = results.filter(r => !r.valid && r.severity === 'warning').length;
+    const infos = results.filter(r => !r.valid && r.severity === 'info').length;
+    const passed = results.filter(r => r.valid).length;
+    
+    return { errors, warnings, infos, passed, total: results.length };
+  }
+}
+
+function runValidation() {
+  const code = document.getElementById('sclCode').value;
+  const resultDiv = document.getElementById('result');
+  
+  const validator = new SCLValidator();
+  const results = validator.validate(code);
+  const summary = validator.getSummary(results);
+  
+  let html = `<h3>Résultats de la validation</h3>`;
+  html += `<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0;">`;
+  html += `<div style="padding: 12px; background: ${summary.errors > 0 ? '#fee2e2' : '#dcfce7'}; border-radius: 6px; text-align: center;">
+    <div style="font-size: 24px; font-weight: bold; color: ${summary.errors > 0 ? '#dc2626' : '#16a34a'};">${summary.errors}</div>
+    <div style="font-size: 12px; color: #666;">Erreurs</div>
+  </div>`;
+  html += `<div style="padding: 12px; background: ${summary.warnings > 0 ? '#fef3c7' : '#dcfce7'}; border-radius: 6px; text-align: center;">
+    <div style="font-size: 24px; font-weight: bold; color: ${summary.warnings > 0 ? '#d97706' : '#16a34a'};">${summary.warnings}</div>
+    <div style="font-size: 12px; color: #666;">Avertissements</div>
+  </div>`;
+  html += `<div style="padding: 12px; background: ${summary.infos > 0 ? '#e0f2fe' : '#dcfce7'}; border-radius: 6px; text-align: center;">
+    <div style="font-size: 24px; font-weight: bold; color: ${summary.infos > 0 ? '#0284c7' : '#16a34a'};">${summary.infos}</div>
+    <div style="font-size: 12px; color: #666;">Infos</div>
+  </div>`;
+  html += `<div style="padding: 12px; background: #dcfce7; border-radius: 6px; text-align: center;">
+    <div style="font-size: 24px; font-weight: bold; color: #16a34a;">${summary.passed}/${summary.total}</div>
+    <div style="font-size: 12px; color: #666;">Règles validées</div>
+  </div>`;
+  html += `</div>`;
+  
+  html += `<h4>Détail des règles:</h4>`;
+  results.forEach(r => {
+    const className = r.valid ? 'rule-success' : `rule-${r.severity}`;
+    const icon = r.valid ? '✅' : (r.severity === 'error' ? '❌' : '⚠️');
+    html += `<div class="rule-item ${className}">
+      <strong>${icon} [${r.ruleId}] ${r.ruleName}</strong>: ${r.message}
+    </div>`;
+  });
+  
+  resultDiv.innerHTML = html;
+  resultDiv.style.display = 'block';
+}
+</script>
+</body>
+</html>
